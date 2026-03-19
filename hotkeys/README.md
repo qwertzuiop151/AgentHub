@@ -119,12 +119,13 @@ WshShell.Run "pythonw hotkeys\hotkey-manager.py", 0, False
 
 Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
 
-| | CPU | NVIDIA (CUDA) | AMD (Vulkan) | Intel |
+| | CPU | NVIDIA (CUDA) | AMD (Vulkan) | Intel (SYCL/oneAPI) |
 |---|---|---|---|---|
-| **Setup** | Works out of the box | CUDA toolkit + cuBLAS | Vulkan SDK + whisper.cpp Vulkan build | CPU only |
-| **Speed** | ~2-4s for a 5s clip | ~0.3-0.5s | ~0.5-1s | ~2-4s (CPU) |
-| **RAM** | ~1.5GB system RAM | ~1.5GB VRAM | ~1.5GB VRAM | ~1.5GB system RAM |
+| **Setup** | Works out of the box | CUDA toolkit + cuBLAS | Vulkan SDK + whisper.cpp Vulkan build | Intel oneAPI toolkit + SYCL build |
+| **Speed** | ~2-4s for a 5s clip | ~0.3-0.5s | ~0.5-1s | ~0.5-1s (up to 12x vs CPU) |
+| **RAM** | ~1.5GB system RAM | ~1.5GB VRAM | ~1.5GB VRAM | ~1.5GB VRAM |
 | **Quality** | Same | Same | Same | Same |
+| **Works on** | Everything | NVIDIA only | AMD + NVIDIA | Intel Arc / iGPU (MTL+) |
 
 **CPU is the default and works great.** GPU only matters if you're doing very frequent, long dictations and want near-instant transcription. For occasional push-to-talk (a few sentences at a time), CPU is fast enough.
 
@@ -134,7 +135,7 @@ Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
 
 **AMD (Vulkan):** Works on Windows and Linux. Requires Vulkan SDK and building whisper.cpp with Vulkan backend (`-DGGML_VULKAN=ON`). Then point `pywhispercpp` to the Vulkan-enabled library. Tested and working on RX 7900 XT.
 
-**Intel:** No GPU acceleration supported by whisper.cpp. Use CPU — it's fast enough for push-to-talk.
+**Intel (SYCL/oneAPI):** Supported since whisper.cpp 1.8.3 with up to 12x speedup vs CPU. Works on Intel Arc dGPUs and integrated GPUs (Meteor Lake and newer). Requires [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html) and building whisper.cpp with `-DGGML_SYCL=ON`. See the [whisper.cpp SYCL guide](https://github.com/ggml-org/whisper.cpp/blob/master/README_sycl.md). Setup is more involved than CUDA/Vulkan, but the performance gain is significant. If the setup seems too complex, CPU works fine as a fallback.
 
 ---
 
