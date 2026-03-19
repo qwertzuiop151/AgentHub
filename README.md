@@ -57,6 +57,12 @@ Read the [full blueprint](BLUEPRINT.md) or copy the Quick Start prompt at the to
 
 ---
 
+## Hotkey Manager + Voice Control
+
+The `hotkeys/` folder contains a push-to-talk voice input system (local Whisper STT) + text-to-speech output (Edge TTS) + utility hotkeys. See [hotkeys/README.md](hotkeys/README.md) for setup.
+
+---
+
 ## App Architecture
 
 ```
