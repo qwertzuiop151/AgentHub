@@ -22,10 +22,11 @@ Want to install manually instead? See [QUICKSTART.md](QUICKSTART.md).
 
 ## What is AgentHub?
 
-**Two things in one repo:**
+**Three things in one repo:**
 
 1. **AgentHub** — Desktop app for running multiple [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agents side-by-side in a single window
 2. **[Multi-Agent Blueprint](BLUEPRINT.md)** — A battle-tested architecture for organizing multiple Claude Code agents into a self-improving system
+3. **[Hotkey Manager + Voice Control](hotkeys/)** — Push-to-talk Whisper STT, text-to-speech, and utility hotkeys for Claude Code
 
 Built with Electron, React, xterm.js, and node-pty. ![Windows](https://img.shields.io/badge/platform-Windows-blue)
 
