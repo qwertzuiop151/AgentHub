@@ -1,15 +1,33 @@
 # AgentHub
 
+## Get Started in 30 Seconds
+
+```bash
+git clone https://github.com/qwertzuiop151/AgentHub.git
+cd AgentHub
+claude
+```
+
+Then tell Claude:
+
+> *"Read SETUP.md and set up AgentHub on my machine."*
+
+That's it. Claude checks your system, installs what's missing, builds the app, and creates a desktop shortcut. Fully automated.
+
+No Claude Code yet? Install it first: `npm install -g @anthropic-ai/claude-code`
+
+Want to install manually instead? See [QUICKSTART.md](QUICKSTART.md).
+
+---
+
+## What is AgentHub?
+
 **Two things in one repo:**
 
 1. **AgentHub** — Desktop app for running multiple [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agents side-by-side in a single window
 2. **[Multi-Agent Blueprint](BLUEPRINT.md)** — A battle-tested architecture for organizing multiple Claude Code agents into a self-improving system
 
-Built with Electron, React, xterm.js, and node-pty.
-
-![Windows](https://img.shields.io/badge/platform-Windows-blue)
-
----
+Built with Electron, React, xterm.js, and node-pty. ![Windows](https://img.shields.io/badge/platform-Windows-blue)
 
 ## The App
 
@@ -61,7 +79,7 @@ Read the [full blueprint](BLUEPRINT.md) or copy the Quick Start prompt at the to
 
 **Why the separate process?** On Windows, node-pty's ConPTY mode conflicts with Electron's console handling. Running PTY instances in a standalone Node.js child process avoids this entirely.
 
-## Quick Start
+## Manual Setup
 
 > See [QUICKSTART.md](QUICKSTART.md) for the full step-by-step guide.
 
