@@ -107,19 +107,22 @@ WshShell.Run "pythonw hotkeys\hotkey-manager.py", 0, False
 
 Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
 
-| | CPU | GPU (NVIDIA CUDA) |
-|---|---|---|
-| **Setup** | Works out of the box | Needs CUDA toolkit + cuBLAS |
-| **Speed** | ~2-4s for a 5s clip (large-v3) | ~0.3-0.5s for a 5s clip |
-| **RAM** | ~1.5GB system RAM | ~1.5GB VRAM |
-| **Quality** | Same (same model) | Same (same model) |
-| **Recommended for** | Most users, AMD GPUs | Heavy voice users with NVIDIA GPU |
+| | CPU | NVIDIA (CUDA) | AMD (Vulkan) | Intel |
+|---|---|---|---|---|
+| **Setup** | Works out of the box | CUDA toolkit + cuBLAS | Vulkan SDK + whisper.cpp Vulkan build | CPU only |
+| **Speed** | ~2-4s for a 5s clip | ~0.3-0.5s | ~0.5-1s | ~2-4s (CPU) |
+| **RAM** | ~1.5GB system RAM | ~1.5GB VRAM | ~1.5GB VRAM | ~1.5GB system RAM |
+| **Quality** | Same | Same | Same | Same |
 
 **CPU is the default and works great.** GPU only matters if you're doing very frequent, long dictations and want near-instant transcription. For occasional push-to-talk (a few sentences at a time), CPU is fast enough.
 
-**AMD GPUs (ROCm):** Not supported by whisper.cpp on Windows. Use CPU, or wait for Linux + ROCm support.
+### GPU setup by vendor
 
-**To enable GPU:** Install `pywhispercpp` with CUDA support — see [pywhispercpp docs](https://github.com/abdeladim-s/pywhispercpp#nvidia-gpu-support).
+**NVIDIA (CUDA):** Install CUDA toolkit, then `pywhispercpp` with CUDA support. See [pywhispercpp docs](https://github.com/abdeladim-s/pywhispercpp#nvidia-gpu-support).
+
+**AMD (Vulkan):** Works on Windows and Linux. Requires Vulkan SDK and building whisper.cpp with Vulkan backend (`-DGGML_VULKAN=ON`). Then point `pywhispercpp` to the Vulkan-enabled library. Tested and working on RX 7900 XT.
+
+**Intel:** No GPU acceleration supported by whisper.cpp. Use CPU — it's fast enough for push-to-talk.
 
 ---
 
