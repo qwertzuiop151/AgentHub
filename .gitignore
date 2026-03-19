@@ -1,0 +1,12 @@
+node_modules/
+dist/
+out/
+*.log
+*.tmp.*
+CLAUDE.md
+MEMORY.md
+TODO.md
+.planning/
+Screenshot*
+test-pty*.js
+docs/
