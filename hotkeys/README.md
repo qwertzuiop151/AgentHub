@@ -125,7 +125,7 @@ Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
 | **Speed** | ~2-4s for a 5s clip | ~0.3-0.5s | ~0.5-1s | ~0.5-1s (up to 12x vs CPU) |
 | **RAM** | ~1.5GB system RAM | ~1.5GB VRAM | ~1.5GB VRAM | ~1.5GB VRAM |
 | **Quality** | Same | Same | Same | Same |
-| **Works on** | Everything | NVIDIA only | AMD + NVIDIA | Intel Arc / iGPU (MTL+) |
+| **Works on** | Everything | NVIDIA only | AMD + NVIDIA | Intel Arc / iGPU (incl. Iris Xe) |
 
 **CPU is the default and works great.** GPU only matters if you're doing very frequent, long dictations and want near-instant transcription. For occasional push-to-talk (a few sentences at a time), CPU is fast enough.
 
@@ -135,7 +135,7 @@ Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
 
 **AMD (Vulkan):** Works on Windows and Linux. Requires Vulkan SDK and building whisper.cpp with Vulkan backend (`-DGGML_VULKAN=ON`). Then point `pywhispercpp` to the Vulkan-enabled library. Tested and working on RX 7900 XT.
 
-**Intel (SYCL/oneAPI):** Supported since whisper.cpp 1.8.3 with up to 12x speedup vs CPU. Works on Intel Arc dGPUs and integrated GPUs (Meteor Lake and newer). Requires [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html) and building whisper.cpp with `-DGGML_SYCL=ON`. See the [whisper.cpp SYCL guide](https://github.com/ggml-org/whisper.cpp/blob/master/README_sycl.md). Setup is more involved than CUDA/Vulkan, but the performance gain is significant. If the setup seems too complex, CPU works fine as a fallback.
+**Intel (SYCL/oneAPI):** Supported since whisper.cpp 1.8.3 with significant speedup vs CPU. Works on Intel Arc dGPUs and integrated GPUs including Iris Xe (Tiger Lake/Alder Lake) and newer. Even an Iris Xe with 4GB shared VRAM easily fits the quantized large-v3 model (~600MB) and should deliver ~2-4x speedup over CPU thanks to parallel matrix operations on the GPU cores. Requires [Intel oneAPI Base Toolkit](https://www.intel.com/content/www/us/en/developer/tools/oneapi/base-toolkit.html) and building whisper.cpp with `-DGGML_SYCL=ON`. See the [whisper.cpp SYCL guide](https://github.com/ggml-org/whisper.cpp/blob/master/README_sycl.md). Setup is more involved than CUDA/Vulkan, but the speed gain is worth it — GPU acceleration makes push-to-talk feel near-instant vs the noticeable 2-4s delay on CPU.
 
 ---
 
