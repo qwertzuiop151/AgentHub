@@ -25,16 +25,13 @@ import numpy as np
 
 # ── Konfiguration ─────────────────────────────────────────────────────────────
 MIC_DEVICE        = 20           # Fallback-Index wenn Name nicht gefunden
-MIC_NAME_CONTAINS = 'Kopfhörermikrofon (Xbox Controller)'  # Suche Gerät per Name
+MIC_NAME_CONTAINS = 'Microphone'  # UPDATE THIS: run `python -c "import sounddevice; print(sounddevice.query_devices())"` to find your mic name
 SAMPLE_RATE  = 48_000      # Nativer Geräterate
 WHISPER_RATE = 16_000      # Whisper erwartet 16 kHz
 LANGUAGE     = 'de'
 MODEL_PATH   = os.path.join(os.path.dirname(__file__), 'models', 'ggml-large-v3-q5_0.bin')
 INITIAL_PROMPT = (
-    'Nicotiana benthamiana, RepA, Geminivirus, mitochondrial, MPI-MP, '
-    'Agrobacterium, T-DNA, Plasmid, Gibson Assembly, Transformation, '
-    'Transkription, Expression, Vektor, Primer, Sequenzierung, '
-    'Claude, Agent, Repository, Commit, Pull Request, Refactoring'
+    'Claude, Agent, Repository, Commit, Pull Request, Refactoring'  # Add your domain-specific vocabulary here
 )
 HOTKEY       = 'f9'
 LANG_TOGGLE  = 'f4'
