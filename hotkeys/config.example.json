@@ -1,0 +1,15 @@
+{
+  "mic_name": "Headset Microphone",
+  "mic_device_index": null,
+  "sample_rate": 48000,
+  "language": "de",
+  "model_path": "models/ggml-large-v3-q5_0.bin",
+  "tts_voice_de": "de-DE-ConradNeural",
+  "tts_voice_en": "en-US-GuyNeural",
+  "tts_speed": "+20%",
+  "initial_prompt": "",
+  "hotkey_stt": "f9",
+  "hotkey_lang_toggle": "f4",
+  "hotkey_tts_toggle": "f8",
+  "hotkey_tts_stop": "f7"
+}
