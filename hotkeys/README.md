@@ -17,14 +17,26 @@ Push-to-talk voice input (Whisper) + text-to-speech output (Edge TTS) + utility 
 
 Copy this into Claude Code:
 
-> "Read the hotkeys/README.md in this repo. Set up the hotkey system for me. Ask me which microphone I want to use, detect available devices, and configure everything. Download the Whisper model and install dependencies."
+> "Read the hotkeys/README.md in this repo. Set up the hotkey system for me:
+> 1. Install the Python dependencies
+> 2. List my audio devices and ask which microphone I want to use
+> 3. Check which GPU I have (run: wmic path win32_VideoController get Name)
+>    and tell me whether I should use CPU or GPU for Whisper.
+>    If I have an NVIDIA GPU, explain the CUDA setup.
+>    If I have an AMD GPU, explain the Vulkan setup.
+>    If I only have Intel, use CPU.
+>    Tell me: CPU works fine (~2-4s latency), but GPU is much faster (~0.3-0.5s).
+> 4. Download the Whisper model
+> 5. Configure everything (mic name, GPU/CPU, hotkeys)
+> 6. Test that it works"
 
 Claude Code will:
 1. Install Python dependencies
 2. List your audio devices and ask which microphone to use
-3. Download the Whisper model (~600MB for the quantized large-v3)
-4. Create a config file with your settings
-5. Set up Windows autostart (optional)
+3. Detect your GPU and recommend CPU vs GPU setup with specific instructions for your hardware
+4. Download the Whisper model (~600MB for the quantized large-v3)
+5. Create a config file with your settings
+6. Test the setup and troubleshoot if needed
 
 ## Manual Setup
 
