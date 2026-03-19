@@ -58,16 +58,35 @@ This compiles node-pty against Electron's Node.js version. If it fails:
 
 ## Step 4: Configure projects directory
 
-Check if Claude Code projects exist:
+AgentHub needs to know where the user keeps their project folders. **Ask the user:**
+
+> "Where do you keep the project folders you want to use with Claude Code?
+> For example: `C:\Users\You\Projects` or `D:\Dev\MyProjects`
+>
+> AgentHub will list all subfolders in that directory as available projects."
+
+**How it works:**
+- Each subfolder in the projects directory becomes a selectable project in AgentHub
+- When the user starts an agent, Claude Code opens in that project's folder
+- The user can organize their projects however they like — one folder per project
+
+**Setting the projects directory:**
+
+Check if Claude Code projects already exist:
 ```bash
 ls ~/.claude/projects/ 2>/dev/null || echo "No Claude projects directory found"
 ```
 
-- **If entries exist:** Auto-detection will work. Tell the user.
-- **If empty or missing:** Ask the user where they keep their project folders, then add this to `start.bat` before the build line:
+- **If entries exist AND the user is happy with auto-detection:** No action needed. AgentHub reads Claude Code's config to find the projects root automatically.
+- **If the user wants a custom path (or auto-detection won't work):** Add this line to `start.bat`, right before the `npm run build` line:
+  ```bat
+  set AGENTHUB_PROJECTS_DIR=C:\Users\You\Projects
   ```
-  set AGENTHUB_PROJECTS_DIR=<their path>
-  ```
+  Replace the path with whatever the user tells you.
+
+- **The user can change this later** at any time by editing `start.bat`.
+
+**Important:** The directory must already exist and contain at least one subfolder (project). If it's empty, AgentHub will show no projects in the startup dialog.
 
 ## Step 5: Build the app
 
