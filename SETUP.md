@@ -118,7 +118,7 @@ After verifying, ask the user to close the app for the shortcut step.
 
 ## Step 7: Create desktop shortcut
 
-Verify `start.bat` exists, then create a Windows shortcut:
+Verify `start.bat` exists, then create a Windows shortcut with the AgentHub icon:
 
 ```bash
 cat > create-shortcut.vbs << 'VBS'
@@ -128,12 +128,15 @@ Set oLink = oWS.CreateShortcut(sLinkFile)
 oLink.TargetPath = oWS.CurrentDirectory & "\start.bat"
 oLink.WorkingDirectory = oWS.CurrentDirectory
 oLink.Description = "Launch AgentHub"
+oLink.IconLocation = oWS.CurrentDirectory & "\assets\icon.ico"
 oLink.WindowStyle = 7
 oLink.Save
 VBS
 cscript //nologo create-shortcut.vbs
 del create-shortcut.vbs
 ```
+
+This uses the Electron icon from `assets/icon.ico` as the shortcut icon.
 
 ## Step 8: Done!
 
