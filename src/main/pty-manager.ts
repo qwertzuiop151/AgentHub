@@ -9,9 +9,15 @@ interface PtyCallbacks {
 }
 
 /**
- * Find Git Bash on Windows. Checks common locations and falls back to PATH.
+ * Find Git Bash on Windows.
+ * Priority: GIT_BASH_PATH env var > common locations > 'where git' fallback.
  */
 function findGitBash(): string {
+  // User-specified path takes priority
+  if (process.env.GIT_BASH_PATH && fs.existsSync(process.env.GIT_BASH_PATH)) {
+    return process.env.GIT_BASH_PATH
+  }
+
   const candidates = [
     'C:\\Program Files\\Git\\bin\\bash.exe',
     'C:\\Program Files (x86)\\Git\\bin\\bash.exe',
