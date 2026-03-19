@@ -1,6 +1,13 @@
 # AgentHub
 
-## Get Started in 30 Seconds
+> [!TIP]
+> **You don't need to install anything manually.** Clone the repo, open Claude Code, paste one prompt. Claude Code detects your hardware, asks what you want, and sets up everything for you.
+
+## Get started in 60 seconds
+
+**Prerequisites:** [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed. Don't have it? Run `npm install -g @anthropic-ai/claude-code` (requires Node.js 18+).
+
+### Step 1 — Clone and open
 
 ```bash
 git clone https://github.com/qwertzuiop151/AgentHub.git
@@ -8,21 +15,24 @@ cd AgentHub
 claude
 ```
 
-Then tell Claude:
+### Step 2 — Paste this prompt
 
-> *"Read SETUP.md and set up AgentHub on my machine."*
+> [!IMPORTANT]
+> **Copy this entire block and paste it into Claude Code. It will do the rest.**
+>
+> `Read the README.md in this repo. It has three components: (1) AgentHub — a desktop app for running multiple Claude Code agents side-by-side, (2) A Multi-Agent Blueprint — an architecture for organizing your agents, (3) Hotkey Manager + Voice Control — push-to-talk with Whisper + TTS. Ask me which of these I want to set up. Explain what each one does and let me pick. Then walk me through the setup step by step — install dependencies, detect my GPU and microphone, download models, configure everything. Adapt it all to my system and preferences.`
 
-That's it. Claude checks your system, installs what's missing, builds the app, and creates a desktop shortcut. Fully automated.
+### Step 3 — There is no step 3.
 
-No Claude Code yet? Install it first: `npm install -g @anthropic-ai/claude-code`
+Claude Code handles the rest: installing dependencies, detecting your GPU, finding your microphone, downloading models, writing config files. You just answer its questions.
 
-Want to install manually instead? See [QUICKSTART.md](QUICKSTART.md).
+> **Everything in this repo is a starting point, not a finished product.** The whole point is to customize it to your own needs. Change hotkeys, swap models, rewrite rules, remove what you don't need, add what's missing. The repo gives you escape velocity — you steer.
 
 ---
 
-## What is AgentHub?
+## What's in this repo?
 
-**Three things in one repo:**
+**Three things:**
 
 1. **AgentHub** — Desktop app for running multiple [Claude Code](https://docs.anthropic.com/en/docs/claude-code) agents side-by-side in a single window
 2. **[Multi-Agent Blueprint](BLUEPRINT.md)** — A battle-tested architecture for organizing multiple Claude Code agents into a self-improving system
@@ -30,7 +40,9 @@ Want to install manually instead? See [QUICKSTART.md](QUICKSTART.md).
 
 Built with Electron, React, xterm.js, and node-pty. ![Windows](https://img.shields.io/badge/platform-Windows-blue)
 
-## The App
+---
+
+## 1. The App
 
 AgentHub gives you a tiled terminal grid where each panel runs its own Claude Code session. Instead of juggling multiple terminal windows, you get:
 
@@ -44,7 +56,9 @@ AgentHub gives you a tiled terminal grid where each panel runs its own Claude Co
 - **Plans viewer** — browse plan documents across all your projects
 - **Keyboard shortcuts** — Ctrl+1-9 to switch panels, Ctrl+Tab to cycle
 
-## The Blueprint
+> For detailed app setup instructions, see [SETUP.md](SETUP.md).
+
+## 2. The Blueprint
 
 The app is just the terminal manager. The real power comes from **how you organize** your agents. The [BLUEPRINT.md](BLUEPRINT.md) documents a complete multi-agent architecture:
 
@@ -54,13 +68,19 @@ The app is just the terminal manager. The real power comes from **how you organi
 - **Self-improvement loop** — built-in audit system detects config drift, stale knowledge, and optimization opportunities
 - **14 sections** covering directory structure, hooks, skills, MCP integration, advanced patterns, and honest limitations
 
-Read the [full blueprint](BLUEPRINT.md) or copy the Quick Start prompt at the top into a new Claude Code session to get started.
+## 3. Hotkey Manager + Voice Control
 
----
+Push-to-talk voice input (local Whisper STT) + text-to-speech output (Edge TTS) + utility hotkeys. See [hotkeys/README.md](hotkeys/README.md) for details.
 
-## Hotkey Manager + Voice Control
+| Hotkey | Function |
+|--------|----------|
+| **F9** | Push-to-talk — hold to speak, release to transcribe |
+| **F8** | Toggle text-to-speech |
+| **F7** | Stop current TTS playback |
+| **F6** | Toggle notifications |
+| **F12** | Start/stop all hotkey scripts |
 
-The `hotkeys/` folder contains a push-to-talk voice input system (local Whisper STT) + text-to-speech output (Edge TTS) + utility hotkeys. See [hotkeys/README.md](hotkeys/README.md) for setup.
+Supports GPU acceleration on **NVIDIA** (CUDA), **AMD** (Vulkan), and **Intel** (SYCL/oneAPI) for near-instant transcription.
 
 ---
 
@@ -85,35 +105,6 @@ The `hotkeys/` folder contains a push-to-talk voice input system (local Whisper 
 ```
 
 **Why the separate process?** On Windows, node-pty's ConPTY mode conflicts with Electron's console handling. Running PTY instances in a standalone Node.js child process avoids this entirely.
-
-## Manual Setup
-
-> See [QUICKSTART.md](QUICKSTART.md) for the full step-by-step guide.
-
-```bash
-# Prerequisites: Node.js 18+, Git for Windows, C++ build tools, Claude Code CLI
-
-git clone https://github.com/qwertzuiop151/AgentHub.git
-cd AgentHub
-npm install --ignore-scripts
-npx electron-rebuild -f -w node-pty
-npm run build
-npx electron .
-```
-
-## Configuration
-
-### Projects directory
-
-AgentHub auto-detects your projects folder from Claude Code's config (`~/.claude/projects/`). If auto-detection fails or you want to override it, set:
-
-```
-set AGENTHUB_PROJECTS_DIR=C:\Users\You\Projects
-```
-
-### Desktop shortcut
-
-Run `start.bat` to build and launch. Create a shortcut to it on your desktop for one-click access.
 
 ## Tech Stack
 
