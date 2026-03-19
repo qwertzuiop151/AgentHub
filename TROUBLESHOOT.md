@@ -170,6 +170,105 @@ cat "$APPDATA/agenthub/diagnostics.log" 2>/dev/null | tail -20 || echo "No log f
 
 Report what you find to the user.
 
+
+## Phase 3b: Hotkeys + Voice Control Issues
+
+### Whisper not transcribing / no output after speaking
+
+**Cause:** Wrong microphone selected or model not downloaded.
+
+1. Check available microphones:
+   ```bash
+   python -c "import sounddevice; print(sounddevice.query_devices())"
+   ```
+
+2. Check if the configured mic name matches:
+   ```bash
+   grep "MIC_NAME_CONTAINS" hotkeys/whisper-stt.py
+   ```
+   The value must be a substring of your actual device name from step 1.
+
+3. Check if the Whisper model exists:
+   ```bash
+   ls hotkeys/models/*.bin 2>/dev/null || echo "NO MODEL FOUND"
+   ```
+   If missing, download it:
+   ```bash
+   mkdir -p hotkeys/models
+   curl -L -o hotkeys/models/ggml-large-v3-q5_0.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin
+   ```
+
+### Microphone not found / wrong device
+
+List all input devices with their indices:
+```bash
+python -c "import sounddevice as sd; [print(f'{i}: {d[chr(110)+chr(97)+chr(109)+chr(101)]}') for i, d in enumerate(sd.query_devices()) if d['max_input_channels'] > 0]"
+```
+
+Ask the user which one is their microphone, then update MIC_NAME_CONTAINS in hotkeys/whisper-stt.py with a unique part of that device name.
+
+### TTS not speaking / edge-tts errors
+
+**Cause:** No internet connection (Edge TTS is cloud-based) or package not installed.
+
+```bash
+pip show edge-tts 2>/dev/null || echo "NOT INSTALLED"
+edge-tts --text "hello world" --write-media /tmp/test.mp3 && echo "TTS WORKS" || echo "TTS FAILED -- check internet"
+```
+
+### GPU acceleration not working for Whisper
+
+1. Check which GPU you have:
+   ```bash
+   wmic path win32_VideoController get Name 2>/dev/null || echo "Could not detect GPU"
+   ```
+
+2. Based on vendor:
+   - **NVIDIA:** Check CUDA: `nvidia-smi 2>/dev/null || echo "No CUDA"`
+   - **AMD:** Check Vulkan: `vulkaninfo --summary 2>/dev/null || echo "No Vulkan SDK"`
+   - **Intel:** Check oneAPI: `sycl-ls 2>/dev/null || echo "No oneAPI"`
+
+3. If GPU tools are missing, Whisper falls back to CPU automatically. See hotkeys/README.md for GPU setup per vendor.
+
+### Hotkey-manager won't start / Python errors
+
+```bash
+python hotkeys/hotkey-manager.py 2>&1 | head -20
+```
+
+Common fixes:
+- ModuleNotFoundError: `pip install -r hotkeys/requirements.txt`
+- Permission denied: run as Administrator
+- Lock file exists: delete ~/.whisper_stt.lock if stale
+
+## Phase 3c: General Windows Issues
+
+### npm install fails behind corporate proxy/VPN
+
+```bash
+npm config get proxy
+npm config get https-proxy
+```
+
+If behind a proxy, set it:
+```bash
+npm config set proxy http://your-proxy:port
+npm config set https-proxy http://your-proxy:port
+```
+
+### Windows Defender / Antivirus blocking builds
+
+Symptoms: electron-rebuild fails with access denied, or compiled files disappear.
+
+Fix: Add the AgentHub folder to Defender exclusions:
+```powershell
+Add-MpPreference -ExclusionPath "C:\path	o\AgentHub"
+```
+
+### Permission errors during install or build
+
+Run the terminal as **Administrator**. If that fixes it, move the project to a user-owned directory instead of a system-protected one.
+
 ## Phase 4: Full Reset (nuclear option)
 
 If nothing else works, do a clean reinstall:
