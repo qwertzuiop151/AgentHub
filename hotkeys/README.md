@@ -103,6 +103,26 @@ Set WshShell = CreateObject("WScript.Shell")
 WshShell.Run "pythonw hotkeys\hotkey-manager.py", 0, False
 ```
 
+## CPU vs GPU
+
+Whisper can run on CPU or GPU. The setup prompt will ask which you prefer.
+
+| | CPU | GPU (NVIDIA CUDA) |
+|---|---|---|
+| **Setup** | Works out of the box | Needs CUDA toolkit + cuBLAS |
+| **Speed** | ~2-4s for a 5s clip (large-v3) | ~0.3-0.5s for a 5s clip |
+| **RAM** | ~1.5GB system RAM | ~1.5GB VRAM |
+| **Quality** | Same (same model) | Same (same model) |
+| **Recommended for** | Most users, AMD GPUs | Heavy voice users with NVIDIA GPU |
+
+**CPU is the default and works great.** GPU only matters if you're doing very frequent, long dictations and want near-instant transcription. For occasional push-to-talk (a few sentences at a time), CPU is fast enough.
+
+**AMD GPUs (ROCm):** Not supported by whisper.cpp on Windows. Use CPU, or wait for Linux + ROCm support.
+
+**To enable GPU:** Install `pywhispercpp` with CUDA support — see [pywhispercpp docs](https://github.com/abdeladim-s/pywhispercpp#nvidia-gpu-support).
+
+---
+
 ## How it works
 
 ```
