@@ -13,7 +13,7 @@ from toast import show_toast
 
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = ["whisper-stt.py", "notify-toggle.py"]
-PYTHON = r"F:\Anaconda3\python.exe"
+PYTHON = sys.executable  # Uses whatever Python is running this script
 
 processes = []
 
