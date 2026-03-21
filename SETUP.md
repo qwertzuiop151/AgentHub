@@ -1,161 +1,384 @@
-# AgentHub — Automated Setup with Claude Code
+# Claude Toolkit -- Setup Wizard
 
-> **Usage:** Open a terminal in the AgentHub folder, run `claude`, and say:
+> **Usage:** Clone this repo, run `claude`, say: "Read SETUP.md and set me up"
 >
-> *"Read SETUP.md and set up AgentHub on my machine."*
->
-> Claude will walk you through everything automatically.
+> This document is written FOR Claude. It contains step-by-step instructions
+> that a Claude Code instance reads and executes to install the toolkit.
 
 ---
 
-## Step 1: Check what's already installed
+## Overview
 
-**Important: Check first, install only what's missing.** Do NOT blindly install everything — the user may already have some or all prerequisites.
+The Claude Toolkit installs a power-user harness for Claude Code:
 
-Run these checks and report the results:
+| Component | File | Purpose |
+|-----------|------|---------|
+| Global Rules | `~/.claude/CLAUDE.md` | Self-sufficiency, memory, git hygiene, hard rules |
+| Settings | `~/.claude/settings.json` | Permissions, hooks, statusline |
+| Auto-Memory Hook | `~/.claude/hooks/auto-memory.mjs` | Reminds you to update MEMORY.md on decisions/fixes |
+| Statusline Hook | `~/.claude/hooks/statusline.mjs` | Shows model, CWD, context window usage |
+| Memory Starter | Project `MEMORY.md` | Template for per-project memory |
 
-```bash
-node --version          # Need v18+
-git --version           # Need Git for Windows (includes Git Bash)
-claude --version        # Need Claude Code CLI
-npm config get msvs_version   # C++ build tools (should return a year like 2022)
+Source templates live in `templates/` and `hooks/` relative to this repo root.
+
+---
+
+## Install
+
+### Step 1 of 9: Welcome + Install Mode
+
+Print the following welcome message to the user:
+
+```
+============================================
+  Claude Toolkit -- Setup Wizard
+============================================
+
+This wizard will install:
+  - Global CLAUDE.md (rules for all projects)
+  - settings.json (permissions + hooks)
+  - Auto-memory hook (MEMORY.md reminders)
+  - Statusline hook (model + context bar)
+  - Memory starter template
+
+All files go into ~/.claude/
 ```
 
-For each check, report one of:
-- **Installed** (version X) — no action needed
-- **Missing** — needs to be installed
+Then ask:
 
-Only ask the user to install what's actually missing:
-- Node.js: https://nodejs.org (LTS recommended)
-- Git for Windows: https://gitforwindows.org (default install path)
-- Claude Code CLI: `npm install -g @anthropic-ai/claude-code`, then run `claude` once to authenticate
-- C++ Build Tools: Download [VS Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/), install the "Desktop development with C++" workload
+> "Would you like **Quick Install** (sensible defaults, 3-5 questions) or **Custom Install** (per-component control)?"
 
-**Do not continue until all prerequisites are confirmed.** If something was just installed, re-run the checks to verify.
+Store the user's choice. IF the user says anything resembling "quick", "fast", "default", or "just do it", treat it as Quick Install.
 
-## Step 2: Install dependencies
+---
 
-```bash
-npm install --ignore-scripts
+### Step 2 of 9: Environment Detection
+
+Detect the current environment and report findings. Run these checks:
+
+1. **OS Detection:** Check `process.platform` from a Node one-liner, or infer from path separators. Report: Windows / macOS / Linux.
+2. **~/.claude/ directory:** Check if `~/.claude/` exists. On Windows this is typically `C:\Users\<username>\.claude\`.
+3. **Existing CLAUDE.md:** Check if `~/.claude/CLAUDE.md` exists. If yes, note its size (line count).
+4. **Existing settings.json:** Check if `~/.claude/settings.json` exists. If yes, verify it is valid JSON.
+5. **Existing hooks/:** Check if `~/.claude/hooks/` directory exists. If yes, list files inside.
+6. **Node.js:** Run `node --version` to confirm Node is available (required for hooks).
+
+Print a detection summary like:
+
+```
+Environment Detection:
+  OS:             Windows 11
+  ~/.claude/      EXISTS
+  CLAUDE.md       EXISTS (47 lines)
+  settings.json   EXISTS (valid JSON)
+  hooks/          EXISTS (2 files: auto-memory.mjs, statusline.mjs)
+  Node.js         v22.x
 ```
 
-The `--ignore-scripts` flag prevents premature native module compilation. If this fails, check for network issues or permission errors.
+IF `~/.claude/` does not exist, create it and note that in the output. Continue to Step 3 only if existing files were detected. IF no existing files found, skip to Step 4.
 
-## Step 3: Build native modules
+---
 
-```bash
-npx electron-rebuild -f -w node-pty
-```
+### Step 3 of 9: Existing File Handling
 
-This compiles node-pty against Electron's Node.js version. If it fails:
-1. Verify C++ build tools are installed (step 1)
-2. Try the manual fallback:
-   ```bash
-   node node_modules/node-pty/scripts/prebuild.js
-   node node_modules/electron/install.js
-   ```
-3. If it still fails, search the error message and help the user resolve it
+This step runs ONLY IF Step 2 detected existing files (`~/.claude/CLAUDE.md`, `~/.claude/settings.json`, or `~/.claude/hooks/*`).
 
-## Step 4: Configure projects directory
+Ask the user:
 
-AgentHub needs to know where the user keeps their project folders. **Ask the user:**
-
-> "Where do you keep the project folders you want to use with Claude Code?
-> For example: `C:\Users\You\Projects` or `D:\Dev\MyProjects`
+> "I found existing configuration files. How should I handle them?"
 >
-> AgentHub will list all subfolders in that directory as available projects."
+> 1. **Merge** -- Keep your existing files, add toolkit components alongside them
+> 2. **Fresh Install** -- Back up existing files, then install clean copies
+> 3. **Abort** -- Stop the wizard, change nothing
 
-**How it works:**
-- Each subfolder in the projects directory becomes a selectable project in AgentHub
-- When the user starts an agent, Claude Code opens in that project's folder
-- The user can organize their projects however they like — one folder per project
+Store the choice as the install strategy.
 
-**Setting the projects directory:**
+IF the user chose **Abort**, print "Setup cancelled. No files were changed." and stop.
 
-Check if Claude Code projects already exist:
+IF the user chose **Quick Install** in Step 1, default to **Merge** and tell the user: "Using Merge strategy (your existing config will be preserved). Say 'fresh' if you want a clean install instead."
+
+---
+
+### Step 4 of 9: Configuration Questions
+
+**IF Quick Install:**
+
+Ask only these questions:
+1. "Is `~/.claude/` the correct location for your config?" (confirm or provide alternative)
+2. "Do you want to add any extra permission rules to settings.json? (e.g., `Bash(pip *)`, `Bash(cargo *)`) Or press enter to skip."
+3. "Should I create a MEMORY.md starter in the current project directory?" (yes/no)
+
+Then skip to Step 5.
+
+**IF Custom Install:**
+
+Ask per-component:
+1. "Install global CLAUDE.md?" (yes / no / merge with existing)
+2. "Install settings.json?" (yes / no / merge with existing)
+3. "Install auto-memory hook?" (yes / no)
+4. "Install statusline hook?" (yes / no)
+5. "Create MEMORY.md starter in current project?" (yes / no)
+6. "Any extra permission rules to add?" (freeform or skip)
+
+Store all choices.
+
+---
+
+### Step 5 of 9: Dry-Run Summary
+
+Build a file action list based on all choices so far. Display it using action icons:
+
+```
+Planned actions:
+  + CREATE   ~/.claude/CLAUDE.md
+  ~ MERGE    ~/.claude/settings.json
+  B BACKUP   ~/.claude/settings.json -> settings.json.bak.20260321-143022
+  + CREATE   ~/.claude/hooks/auto-memory.mjs
+  + CREATE   ~/.claude/hooks/statusline.mjs
+  + CREATE   ./MEMORY.md
+  - SKIP     ~/.claude/CLAUDE.md (user deselected)
+```
+
+Use these action labels:
+- `+ CREATE` -- file will be written fresh
+- `~ MERGE` -- file will be deep-merged with existing
+- `B BACKUP` -- existing file will be backed up before overwrite
+- `- SKIP` -- component was deselected
+
+Tell the user:
+
+> "Here is what I will do. You can deselect any item by number, or say 'proceed' to continue."
+
+IF the user deselects items, update the action list and re-display. Wait for explicit confirmation ("proceed", "go", "yes", "do it", or similar) before continuing.
+
+---
+
+### Step 6 of 9: Backup
+
+This step runs ONLY IF the install strategy is **Fresh Install** or **Merge** and existing files will be overwritten.
+
+For each file that will be overwritten or merged:
+
+1. Generate a timestamp suffix: `.bak.YYYYMMDD-HHMMSS` (use current date/time).
+2. Copy the existing file to the same directory with the backup suffix.
+   Example: `~/.claude/settings.json` -> `~/.claude/settings.json.bak.20260321-143022`
+3. Record the backup in a manifest file at `~/.claude/toolkit-backup-manifest.json`:
+
+```json
+{
+  "backups": [
+    {
+      "original": "~/.claude/settings.json",
+      "backup": "~/.claude/settings.json.bak.20260321-143022",
+      "timestamp": "2026-03-21T14:30:22Z",
+      "reason": "claude-toolkit install"
+    }
+  ]
+}
+```
+
+IF a manifest already exists, read it, append new entries, and write it back.
+
+Report each backup:
+```
+Backups created:
+  ~/.claude/settings.json -> settings.json.bak.20260321-143022
+  ~/.claude/CLAUDE.md -> CLAUDE.md.bak.20260321-143022
+```
+
+---
+
+### Step 7 of 9: Installation
+
+Execute the planned actions. The source files are relative to this repo's root directory.
+
+**7a: Create ~/.claude/hooks/ directory**
+
+IF it does not exist, create it:
 ```bash
-ls ~/.claude/projects/ 2>/dev/null || echo "No Claude projects directory found"
+mkdir -p ~/.claude/hooks
 ```
 
-- **If entries exist AND the user is happy with auto-detection:** No action needed. AgentHub reads Claude Code's config to find the projects root automatically.
-- **If the user wants a custom path (or auto-detection won't work):** Add this line to `start.bat`, right before the `npm run build` line:
-  ```bat
-  set AGENTHUB_PROJECTS_DIR=C:\Users\You\Projects
-  ```
-  Replace the path with whatever the user tells you.
+**7b: Install hooks**
 
-- **The user can change this later** at any time by editing `start.bat`.
+Copy hook files from the repo to the user's hooks directory:
 
-**Important:** The directory must already exist and contain at least one subfolder (project). If it's empty, AgentHub will show no projects in the startup dialog.
+- Source: `hooks/auto-memory.mjs` -> Target: `~/.claude/hooks/auto-memory.mjs`
+- Source: `hooks/statusline.mjs` -> Target: `~/.claude/hooks/statusline.mjs`
 
-## Step 5: Build the app
+Read the source file content and write it to the target path. IF target already exists and strategy is Merge, compare content. IF identical, skip with message "auto-memory.mjs already up to date". IF different, back up existing and overwrite.
 
-```bash
-npm run build
-```
+**7c: Install CLAUDE.md**
 
-Both `tsc` (TypeScript) and `vite build` (React) must succeed. Check for errors in the output.
+- **Fresh Install:** Read `templates/claude-md-global.md` and write it to `~/.claude/CLAUDE.md`.
+- **Merge:** Do NOT auto-merge CLAUDE.md. It is too personal to merge automatically. Instead, print:
 
-## Step 6: Test launch
+  > "Your existing ~/.claude/CLAUDE.md was preserved. The toolkit template is at `templates/claude-md-global.md` in this repo. I recommend reviewing it manually and copying any sections you find useful."
 
-Tell the user you will now open AgentHub to verify everything works:
+  Then show a diff-style summary of sections present in the template but missing from the user's file.
 
-```bash
-npx electron .
-```
+**7d: Install settings.json**
 
-Tell them what to expect:
-- A startup dialog with their project list should appear
-- They can pick a project, choose model/effort, and click Start
-- A terminal panel will open with Claude running
+- **Fresh Install:** Read `templates/settings.json` and write it to `~/.claude/settings.json`.
+- **Merge:** Perform a deep merge using this algorithm:
 
-Common issues:
-- **Blank window** — build failed in step 5, run `npm run build` again and check output
-- **No projects listed** — run `claude` in at least one project folder first
-- **"Prozess beendet" immediately** — Claude CLI not installed or not authenticated
+  1. Read existing `~/.claude/settings.json` and parse as JSON.
+  2. Read `templates/settings.json` and parse as JSON.
+  3. **$schema:** Keep existing if present, otherwise use template value.
+  4. **permissions.allow:** Combine both arrays. Remove exact duplicates (case-sensitive string match). Preserve order: existing entries first, then new entries.
+  5. **permissions.deny:** Same as allow -- combine, deduplicate.
+  6. **hooks:** For each event name (e.g., `UserPromptSubmit`):
+     - IF event exists in both: combine the hook entries. Deduplicate by comparing the `command` string inside each hook object. Existing entries take precedence.
+     - IF event exists only in template: add it.
+     - IF event exists only in existing: keep it.
+  7. **statusLine:** Keep existing statusLine if present. Only use template value if no statusLine is configured.
+  8. **All other keys:** Keep existing values. Add template keys that do not exist in existing.
 
-After verifying, ask the user to close the app for the shortcut step.
+  Write the merged result to `~/.claude/settings.json` with 2-space indentation.
 
-## Step 7: Create desktop shortcut
+  IF the user specified extra permission rules in Step 4, append them to `permissions.allow` (with deduplication).
 
-Verify `start.bat` exists, then create a Windows shortcut with the AgentHub icon:
+**7e: Install Memory Starter**
 
-```bash
-cat > create-shortcut.vbs << 'VBS'
-Set oWS = WScript.CreateObject("WScript.Shell")
-sLinkFile = oWS.SpecialFolders("Desktop") & "\AgentHub.lnk"
-Set oLink = oWS.CreateShortcut(sLinkFile)
-oLink.TargetPath = oWS.CurrentDirectory & "\start.bat"
-oLink.WorkingDirectory = oWS.CurrentDirectory
-oLink.Description = "Launch AgentHub"
-oLink.IconLocation = oWS.CurrentDirectory & "\assets\icon.ico"
-oLink.WindowStyle = 7
-oLink.Save
-VBS
-cscript //nologo create-shortcut.vbs
-del create-shortcut.vbs
-```
+IF the user opted for a MEMORY.md starter:
 
-This uses the Electron icon from `assets/icon.ico` as the shortcut icon.
+- Check if `MEMORY.md` exists in the current working directory.
+- IF it does NOT exist: Read `templates/memory-starter.md` and write it to `./MEMORY.md`.
+- IF it DOES exist: Print "MEMORY.md already exists in this project. Skipping." Do not overwrite.
 
-## Step 8: Done!
+---
 
-Print this summary:
+### Step 8 of 9: Smoke Test
+
+Validate that all installed files are correct:
+
+1. **CLAUDE.md existence:** Check `~/.claude/CLAUDE.md` exists and is non-empty.
+2. **settings.json validity:** Read `~/.claude/settings.json`, run `JSON.parse()` on its content. Must not throw.
+3. **Hook syntax check:** Run `node -c ~/.claude/hooks/auto-memory.mjs` and `node -c ~/.claude/hooks/statusline.mjs`. Both must exit 0.
+4. **Hook file existence:** Verify both hook files exist at expected paths.
+5. **Settings hook references:** Verify that every hook command path in settings.json points to a file that actually exists.
+
+Report results:
 
 ```
-====================================
-   AgentHub Setup Complete!
-====================================
+Smoke Test Results:
+  CLAUDE.md exists        PASS
+  settings.json valid     PASS
+  auto-memory.mjs syntax  PASS
+  statusline.mjs syntax   PASS
+  Hook files exist        PASS
+  Hook paths resolve      PASS
 
-Launch:      Double-click "AgentHub" on your desktop
-             or run start.bat in this folder
-
-Shortcuts:   Ctrl+1-9       Switch to panel N
-             Ctrl+Tab       Next panel
-             Ctrl+Shift+D   Open diagnostics
-
-Projects:    <detected or configured path>
-
-Happy multi-agent coding!
-====================================
+All checks passed!
 ```
+
+IF any check fails:
+- Print the failure reason.
+- Attempt an automatic fix (e.g., re-copy the file, fix JSON syntax).
+- Re-run the failed check.
+- IF still failing after one retry, print the error and suggest the user check the Troubleshooting section.
+
+---
+
+### Step 9 of 9: What's Next
+
+Print this completion message:
+
+```
+============================================
+  Setup Complete!
+============================================
+
+Your Claude Code environment is now configured with:
+  - Global rules (CLAUDE.md)
+  - Smart permissions (settings.json)
+  - Auto-memory reminders (hook)
+  - Context-aware statusline (hook)
+
+IMPORTANT: Restart Claude Code for changes to take effect.
+  Exit this session (type /exit) and start a new one.
+
+Optional extras in this repo:
+  - BLUEPRINT.md    Multi-agent architecture patterns
+  - src/            AgentHub desktop app (Electron)
+  - hotkeys/        Voice control & hotkey manager (Python)
+
+To uninstall or restore previous config, say:
+  "Read SETUP.md, go to the Restore section"
+============================================
+```
+
+---
+
+## Restore
+
+When the user asks to restore a previous configuration:
+
+1. Read `~/.claude/toolkit-backup-manifest.json`. IF it does not exist, print "No backup manifest found. Cannot restore." and stop.
+
+2. Parse the manifest and list all backup entries:
+
+```
+Available backups:
+  [1] settings.json.bak.20260321-143022 (2026-03-21 14:30:22)
+  [2] CLAUDE.md.bak.20260321-143022 (2026-03-21 14:30:22)
+  [3] settings.json.bak.20260315-091500 (2026-03-15 09:15:00)
+```
+
+3. Ask the user which backup(s) to restore. Accept individual numbers, ranges ("1-3"), or "all".
+
+4. For each selected backup:
+   - Copy the backup file back to its original path (overwriting the current version).
+   - Remove the backup entry from the manifest.
+   - Print confirmation: "Restored settings.json from backup 20260321-143022"
+
+5. IF all entries are restored, delete the manifest file.
+
+6. Remind the user to restart Claude Code.
+
+---
+
+## Uninstall
+
+To completely remove toolkit components:
+
+1. Delete `~/.claude/hooks/auto-memory.mjs` and `~/.claude/hooks/statusline.mjs`.
+2. Remove hook and statusLine entries from `~/.claude/settings.json` (parse, delete keys, re-write).
+3. Do NOT delete `~/.claude/CLAUDE.md` -- it may contain user customizations. Warn the user to review it manually.
+4. Do NOT delete `~/.claude/settings.json` entirely -- only remove toolkit-added entries.
+5. Delete `~/.claude/toolkit-backup-manifest.json` if it exists.
+6. Print summary of what was removed and remind user to restart Claude Code.
+
+---
+
+## Troubleshooting
+
+### 1. "node: command not found" when hooks run
+Node.js is not in PATH. Install Node.js (v18+) from https://nodejs.org and restart your terminal.
+
+### 2. Hooks do not fire after install
+Restart Claude Code. Hooks are loaded at session start, not dynamically. Exit with `/exit` and start a new session.
+
+### 3. settings.json parse error after merge
+The merge produced invalid JSON. Run `node -e "JSON.parse(require('fs').readFileSync(require('os').homedir()+'/.claude/settings.json','utf8'))"` to see the error. Fix manually or restore from backup (see Restore section).
+
+### 4. "Permission denied" writing to ~/.claude/
+On Unix: check directory ownership with `ls -la ~/`. On Windows: close any other Claude Code instances that may lock the files.
+
+### 5. Statusline shows nothing
+The statusline hook reads JSON from stdin. Ensure `~/.claude/settings.json` has a `statusLine` entry with `"type": "command"` and `"command": "node ~/.claude/hooks/statusline.mjs"`.
+
+### 6. Auto-memory hook slows down responses
+The hook runs on every prompt submit. If it takes >3 seconds, it times out automatically. Check that `~/.claude/hooks/auto-memory.mjs` is not corrupted -- re-copy from `hooks/auto-memory.mjs` in this repo.
+
+### 7. Backup manifest is corrupted
+Delete `~/.claude/toolkit-backup-manifest.json` and check if `.bak.*` files still exist in `~/.claude/`. You can manually rename them back.
+
+### 8. Merge added duplicate permissions
+Open `~/.claude/settings.json`, find the `permissions.allow` array, and remove duplicate entries manually. The merge algorithm deduplicates, but edge cases (trailing spaces, different quoting) can cause near-duplicates.
+
+### 9. CLAUDE.md merge was not attempted
+This is by design. CLAUDE.md is too personal to auto-merge. Review `templates/claude-md-global.md` and manually copy sections you want.
+
+### 10. Hooks work but statusline does not appear
+The `statusLine` config key is separate from `hooks`. Verify your `~/.claude/settings.json` has both the `hooks` object AND the `statusLine` object at the top level. They are siblings, not nested.
