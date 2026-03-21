@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { getProjectIcon } from '../../../shared/project-icons'
 import type { AgentDefaults, ModelChoice, EffortChoice } from '../../../shared/types'
 
-const DEFAULT_CHECKED = ['Metaplaner']
+const DEFAULT_CHECKED: string[] = []
 
 interface StartupResult {
   projects: string[]
@@ -55,10 +55,10 @@ export default function StartupDialog({ onStart, defaults }: StartupDialogProps)
   return (
     <div className="dialog-overlay">
       <div className="dialog startup-dialog">
-        <h3>Projekte starten</h3>
+        <h3>Select Projects</h3>
         <div className="dialog-row startup-defaults">
           <label>
-            Modell:
+            Model:
             <select value={model} onChange={(e) => setModel(e.target.value as ModelChoice | '')}>
               <option value="">Default (Opus)</option>
               <option value="opus">Opus</option>
@@ -77,8 +77,8 @@ export default function StartupDialog({ onStart, defaults }: StartupDialogProps)
           </label>
         </div>
         <div className="startup-actions-top">
-          <button className="btn-link" onClick={selectAll}>Alle</button>
-          <button className="btn-link" onClick={selectNone}>Keine</button>
+          <button className="btn-link" onClick={selectAll}>All</button>
+          <button className="btn-link" onClick={selectNone}>None</button>
         </div>
         <div className="startup-project-list">
           {projects.map((p) => (
@@ -91,14 +91,14 @@ export default function StartupDialog({ onStart, defaults }: StartupDialogProps)
         </div>
         <div className="dialog-actions">
           <button className="btn-secondary" onClick={() => onStart({ projects: [] })}>
-            Leer starten
+            Start Empty
           </button>
           <button
             className="btn-primary"
             onClick={handleStart}
             disabled={checked.size === 0}
           >
-            {checked.size} Projekt{checked.size !== 1 ? 'e' : ''} starten
+            Start {checked.size} Project{checked.size !== 1 ? 's' : ''}
           </button>
         </div>
       </div>

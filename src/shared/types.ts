@@ -66,6 +66,7 @@ export interface ElectronAPI {
   }
   projects: {
     list: () => Promise<string[]>
+    getDir: () => Promise<string>
   }
   session: {
     save: (state: SessionState) => Promise<void>

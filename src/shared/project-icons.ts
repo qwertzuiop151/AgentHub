@@ -14,8 +14,6 @@ const PROJECT_ICONS: Record<string, string> = {
   Whisper: '\u{1F3A4}',         // microphone
 }
 
-const DEFAULT_ICON = '\u{1F4C2}' // folder
-
 const PROJECT_COLORS: Record<string, string> = {
   AgentHub: '#2d8a4e',
   digestion: '#7c3aed',
@@ -32,12 +30,27 @@ const PROJECT_COLORS: Record<string, string> = {
   Whisper: '#ec4899',
 }
 
-const DEFAULT_COLOR = '#475569'
+const COLOR_PALETTE = [
+  '#2563eb', '#dc2626', '#059669', '#d97706', '#7c3aed',
+  '#0ea5e9', '#e11d48', '#ca8a04', '#9333ea', '#0d9488',
+  '#6366f1', '#ec4899',
+]
+
+function hashString(str: string): number {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash)
+}
 
 export function getProjectIcon(name: string): string {
-  return PROJECT_ICONS[name] || DEFAULT_ICON
+  if (PROJECT_ICONS[name]) return PROJECT_ICONS[name]
+  return name.charAt(0).toUpperCase()
 }
 
 export function getProjectColor(name: string): string {
-  return PROJECT_COLORS[name] || DEFAULT_COLOR
+  if (PROJECT_COLORS[name]) return PROJECT_COLORS[name]
+  return COLOR_PALETTE[hashString(name) % COLOR_PALETTE.length]
 }

@@ -145,6 +145,8 @@ function setupIPC() {
 
   const projectsDir = getProjectsDir()
 
+  ipcMain.handle('projects:getDir', async () => projectsDir)
+
   ipcMain.handle('projects:list', async () => {
     try {
       const entries = await fs.promises.readdir(projectsDir, { withFileTypes: true })

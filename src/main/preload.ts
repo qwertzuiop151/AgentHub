@@ -20,6 +20,7 @@ const api = {
   },
   projects: {
     list: () => ipcRenderer.invoke('projects:list') as Promise<string[]>,
+    getDir: () => ipcRenderer.invoke('projects:getDir') as Promise<string>,
   },
   session: {
     save: (state: SessionState) => ipcRenderer.invoke('session:save', state) as Promise<void>,

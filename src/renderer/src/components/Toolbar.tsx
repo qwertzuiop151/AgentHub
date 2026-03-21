@@ -3,7 +3,7 @@ import type { AgentConfig, AgentDefaults, ModelChoice, EffortChoice, PlanEntry }
 import { getProjectIcon } from '../../../shared/project-icons'
 import FileViewer from './FileViewer'
 
-const PRIORITY_PROJECTS = ['Metaplaner']
+const PRIORITY_PROJECTS: string[] = []
 
 interface ToolbarProps {
   onAddAgent: (config: AgentConfig) => void
@@ -11,13 +11,14 @@ interface ToolbarProps {
   onResetLayout: () => void
   onShowDiagnostics: () => void
   focusMode: boolean
+  projectsDir: string
   onToggleFocusMode: () => void
   generateId: () => string
   defaults: AgentDefaults
   onDefaultsChange: (defaults: AgentDefaults) => void
 }
 
-export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDiagnostics, focusMode, onToggleFocusMode, generateId, defaults, onDefaultsChange }: ToolbarProps) {
+export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDiagnostics, focusMode, projectsDir, onToggleFocusMode, generateId, defaults, onDefaultsChange }: ToolbarProps) {
   const [showDialog, setShowDialog] = useState(false)
   const [viewerFile, setViewerFile] = useState<{ title: string; content: string } | null>(null)
   const [showPlans, setShowPlans] = useState(false)
@@ -68,7 +69,7 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
 
     const config: AgentConfig = {
       id: generateId(),
-      cwd: `F:\\CLAUDECODE\\Projects\\${selectedProject}`,
+      cwd: `${projectsDir}\\${selectedProject}`,
       projectName: selectedProject,
       continue: optContinue,
       dangerouslySkipPermissions: optSkipPerms,
@@ -85,11 +86,11 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
       <div className="toolbar">
         <span className="toolbar-title">AgentHub</span>
         <button onClick={() => setShowDialog(true)}>+ Agent</button>
-        <button onClick={onToggleFocusMode} title={focusMode ? 'Grid-Modus' : 'Focus-Modus'}>
+        <button onClick={onToggleFocusMode} title={focusMode ? 'Grid Mode' : 'Focus Mode'}>
           {focusMode ? 'Grid' : 'Focus'}
         </button>
-        <button onClick={onResetLayout} title="Layout zuruecksetzen">Reset</button>
-        <button onClick={() => window.electronAPI.shell.openClaude()} title="Claude in externem Terminal oeffnen">
+        <button onClick={onResetLayout} title="Reset Layout">Reset</button>
+        <button onClick={() => window.electronAPI.shell.openClaude()} title="Open Claude in external terminal">
           Claude
         </button>
         <div className="spacer" />
@@ -98,7 +99,7 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
             const content = await window.electronAPI.memory.readGlobal()
             setViewerFile({ title: 'Global CLAUDE.md', content })
           }}
-          title="Globale CLAUDE.md"
+          title="Global CLAUDE.md"
         >
           CLAUDE.md
         </button>
@@ -108,12 +109,12 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
             setPlans(list)
             setShowPlans(true)
           }}
-          title="Alle Plaene anzeigen"
+          title="Show all plans"
         >
           Plans
         </button>
         <button onClick={onShowDiagnostics} title="Ctrl+Shift+D">Diagnostics</button>
-        <button onClick={onStopAll}>Alle Stoppen</button>
+        <button onClick={onStopAll}>Stop All</button>
       </div>
 
       {viewerFile && (
@@ -130,7 +131,7 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
             <h3>Plans</h3>
             <div className="plans-list">
               {plans.length === 0 ? (
-                <div style={{ opacity: 0.5 }}>Keine Plaene gefunden</div>
+                <div style={{ opacity: 0.5 }}>No plans found</div>
               ) : (
                 plans.map((plan) => (
                   <button
@@ -149,7 +150,7 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
               )}
             </div>
             <div className="dialog-actions">
-              <button className="btn-secondary" onClick={() => setShowPlans(false)}>Schliessen</button>
+              <button className="btn-secondary" onClick={() => setShowPlans(false)}>Close</button>
             </div>
           </div>
         </div>
@@ -158,9 +159,9 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
       {showDialog && (
         <div className="dialog-overlay" onClick={() => setShowDialog(false)}>
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>Neuen Agent starten</h3>
+            <h3>Start New Agent</h3>
             <label>
-              Projekt:
+              Project:
               <select
                 value={selectedProject}
                 onChange={(e) => setSelectedProject(e.target.value)}
@@ -172,7 +173,7 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
             </label>
             <div className="dialog-row">
               <label>
-                Modell:
+                Model:
                 <select value={model} onChange={(e) => setModel(e.target.value as ModelChoice | '')}>
                   <option value="">Default (Opus)</option>
                   <option value="opus">Opus</option>
@@ -213,15 +214,15 @@ export default function Toolbar({ onAddAgent, onStopAll, onResetLayout, onShowDi
                   checked={optTerminalOnly}
                   onChange={(e) => setOptTerminalOnly(e.target.checked)}
                 />
-                Nur Terminal (kein Claude)
+                Terminal only (no Claude)
               </label>
             </div>
             <div className="dialog-actions">
               <button className="btn-secondary" onClick={() => setShowDialog(false)}>
-                Abbrechen
+                Cancel
               </button>
               <button className="btn-primary" onClick={handleCreate}>
-                Starten
+                Start
               </button>
             </div>
           </div>

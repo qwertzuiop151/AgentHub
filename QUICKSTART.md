@@ -34,7 +34,7 @@ claude  # Run once to authenticate
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/YOUR_USERNAME/AgentHub.git
+git clone https://github.com/qwertzuiop151/AgentHub.git
 cd AgentHub
 
 # 2. Install dependencies (skip native build scripts initially)
@@ -92,7 +92,7 @@ Add this to your `start.bat` before the `npm run build` line.
 |---------|----------|
 | **`node-pty` build fails** | Install C++ build tools (see Prerequisites step 3) |
 | **Blank/white window** | Run `npm run build` again — `dist/renderer/index.html` is missing |
-| **"Prozess beendet" immediately** | Claude CLI not installed or not authenticated (`claude` in a terminal) |
+| **"Process ended" immediately** | Claude CLI not installed or not authenticated (`claude` in a terminal) |
 | **No projects listed** | Run `claude` at least once in a project so `~/.claude/projects/` exists |
 | **`electron-rebuild` fails** | Try: `node node_modules/node-pty/scripts/prebuild.js` then `node node_modules/electron/install.js` |
 | **Git Bash not found** | Install Git to default path, or set `GIT_BASH_PATH` env var |

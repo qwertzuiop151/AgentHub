@@ -26,14 +26,14 @@ export default function DiagnosticsViewer({ onClose }: DiagnosticsViewerProps) {
         </div>
         <div className="file-viewer-content diagnostics-list">
           {events.length === 0 ? (
-            <p style={{ color: '#666' }}>Keine Freeze-Events aufgezeichnet.</p>
+            <p style={{ color: '#666' }}>No freeze events recorded.</p>
           ) : (
             <table className="diagnostics-table">
               <thead>
                 <tr>
-                  <th>Zeit</th>
-                  <th>Quelle</th>
-                  <th>Dauer</th>
+                  <th>Time</th>
+                  <th>Source</th>
+                  <th>Duration</th>
                   <th>Details</th>
                 </tr>
               </thead>

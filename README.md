@@ -81,12 +81,20 @@ Read the [full blueprint](BLUEPRINT.md) or copy the Quick Start prompt at the to
 
 **Why the separate process?** On Windows, node-pty's ConPTY mode conflicts with Electron's console handling. Running PTY instances in a standalone Node.js child process avoids this entirely.
 
+## Prerequisites
+
+Before setting up AgentHub, you need:
+
+- **Node.js 18+** — [download here](https://nodejs.org) (LTS recommended)
+- **Git for Windows** — [download here](https://gitforwindows.org) (includes Git Bash, required for terminal)
+- **Visual Studio Build Tools** with the **"Desktop development with C++"** workload — [download here](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (required for node-pty native compilation)
+- **Claude Code CLI** — install with `npm install -g @anthropic-ai/claude-code`
+
 ## Manual Setup
 
 > See [QUICKSTART.md](QUICKSTART.md) for the full step-by-step guide.
 
 ```bash
-# Prerequisites: Node.js 18+, Git for Windows, C++ build tools, Claude Code CLI
 
 git clone https://github.com/qwertzuiop151/AgentHub.git
 cd AgentHub

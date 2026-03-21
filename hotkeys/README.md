@@ -151,6 +151,12 @@ hotkey-manager.py          Orchestrator — F12 toggles all scripts
 
 **Voice output:** When TTS is enabled (F8), Claude Code's Stop hook calls whisper-stt.py in hook mode, which reads the response and speaks it sentence-by-sentence using Edge TTS (free, cloud-based, high quality).
 
+## Laptop Users
+
+- F-keys on laptops typically require **Fn+F5**, **Fn+F7**, etc.
+- Some laptops have media/brightness keys as the default F-key behavior. Toggle **Fn Lock** in your BIOS settings, or hold the **Fn** key while pressing the hotkey.
+- If hotkeys don't respond, try **Fn+[key]** first before troubleshooting further.
+
 ## Requirements
 
 - Windows 10/11

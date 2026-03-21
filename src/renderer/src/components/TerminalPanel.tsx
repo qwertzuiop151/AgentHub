@@ -189,7 +189,7 @@ export default function TerminalPanel({ config, onClose, onStatusChange, needsAt
         exited = true
         if (statusTimer) clearTimeout(statusTimer)
         updateStatus('inactive')
-        terminal.write('\r\n\x1b[90m--- Prozess beendet. Enter zum Neustarten ---\x1b[0m\r\n')
+        terminal.write('\r\n\x1b[90m--- Process ended. Press Enter to restart ---\x1b[0m\r\n')
       }
     })
 
@@ -199,7 +199,7 @@ export default function TerminalPanel({ config, onClose, onStatusChange, needsAt
         exited = false
         updateStatus('working')
         terminal.clear()
-        terminal.write('\x1b[90mNeustart...\x1b[0m\r\n')
+        terminal.write('\x1b[90mRestarting...\x1b[0m\r\n')
         window.electronAPI.pty.create({
           id: config.id,
           cwd: config.cwd,
@@ -324,16 +324,16 @@ export default function TerminalPanel({ config, onClose, onStatusChange, needsAt
         <button
           className="memory-btn memory-btn-folder"
           onClick={(e) => { e.stopPropagation(); window.electronAPI.shell.openPath(config.cwd) }}
-          title="Ordner oeffnen"
+          title="Open folder"
         >
           &#128193;
         </button>
         <button
           className="memory-btn memory-btn-context"
-          onClick={() => window.electronAPI.pty.write(config.id, 'Fasse kurz zusammen: (1) Wie voll ist dein Kontextfenster (geschaetzt in %)? (2) Welche Dateien hast du gelesen? (3) Was wurde besprochen und was ist der aktuelle Stand?\r')}
-          title="Fragt Claude nach aktuellem Kontext"
+          onClick={() => window.electronAPI.pty.write(config.id, 'Briefly summarize: (1) How full is your context window (estimated %)? (2) Which files have you read? (3) What was discussed and what is the current status?\r')}
+          title="Ask Claude about current context"
         >
-          Kontext?
+          Context?
         </button>
         <span className="memory-buttons">
           <button className="memory-btn memory-btn-claude" onClick={() => openFile('CLAUDE.md')} title="CLAUDE.md">CLAUDE</button>

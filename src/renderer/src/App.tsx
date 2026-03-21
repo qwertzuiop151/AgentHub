@@ -18,10 +18,10 @@ function generateId() {
   return Math.random().toString(36).substring(2, 10)
 }
 
-function createAgentConfig(projectName: string, defaults: AgentDefaults): AgentConfig {
+function createAgentConfig(projectName: string, defaults: AgentDefaults, projectsDir: string): AgentConfig {
   return {
     id: generateId(),
-    cwd: `F:\\CLAUDECODE\\Projects\\${projectName}`,
+    cwd: `${projectsDir}\\${projectName}`,
     projectName,
     continue: defaults.continue,
     dangerouslySkipPermissions: defaults.dangerouslySkipPermissions,
@@ -56,6 +56,7 @@ export default function App() {
   const [focusMode, setFocusMode] = useState(false)
   const [focusedPanelId, setFocusedPanelId] = useState<string | null>(null)
   const [defaults, setDefaults] = useState<AgentDefaults>(DEFAULT_AGENT_DEFAULTS)
+  const [projectsDir, setProjectsDir] = useState<string>('')
   const defaultsRef = useRef(defaults)
   defaultsRef.current = defaults
   const [statusMap, setStatusMap] = useState<Record<string, AgentStatus>>({})
@@ -79,8 +80,9 @@ export default function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  // On mount: check for saved session, otherwise show startup dialog
+  // On mount: load projects dir and check for saved session
   useEffect(() => {
+    window.electronAPI.projects.getDir().then((dir) => setProjectsDir(dir))
     window.electronAPI.session.load().then((session) => {
       if (session?.defaults) {
         setDefaults(session.defaults)
@@ -165,7 +167,7 @@ export default function App() {
     if (result.projects.length > 0) {
       const d = { ...defaultsRef.current, model: result.model, effort: result.effort }
       const newPanels = result.projects.map((name) => {
-        const config = createAgentConfig(name, d)
+        const config = createAgentConfig(name, d, projectsDir)
         return { id: config.id, config }
       })
       setPanels(newPanels)
@@ -211,6 +213,7 @@ export default function App() {
         onResetLayout={() => setGridResetKey((k) => k + 1)}
         onShowDiagnostics={() => setShowDiagnostics(true)}
         focusMode={focusMode}
+        projectsDir={projectsDir}
         onToggleFocusMode={() => {
           setFocusMode((v) => !v)
           if (!focusMode && panels.length > 0) {
@@ -230,7 +233,7 @@ export default function App() {
         <div className="panel-grid">
           <div className="empty-state">
             <div className="empty-state-text">
-              Klicke <strong>+ Agent</strong> um einen Claude Code Agent zu starten
+              Click <strong>+ Agent</strong> to start a Claude Code agent
             </div>
           </div>
         </div>
