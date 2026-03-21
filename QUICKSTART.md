@@ -34,8 +34,8 @@ claude  # Run once to authenticate
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/qwertzuiop151/AgentHub.git
-cd AgentHub
+git clone https://github.com/qwertzuiop151/claude-toolkit.git
+cd claude-toolkit
 
 # 2. Install dependencies (skip native build scripts initially)
 npm install --ignore-scripts
