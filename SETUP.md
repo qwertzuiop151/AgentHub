@@ -574,22 +574,165 @@ IF the user selected Hotkey Manager:
 
    Update `MIC_NAME_CONTAINS` in `hotkeys/whisper-stt.py` with a unique substring of the selected device name.
 
-4. **Download Whisper model (optional):**
-   Ask: "Download the Whisper speech model for offline voice control? (~500MB)"
+4. **Whisper setup (voice control):**
 
-   IF yes:
+   Ask: "Do you want voice-to-text control? (Whisper transcribes your speech and types it into Claude)"
+
+   IF no, skip to step 5.
+
+   **4a: Detect GPU hardware:**
    ```bash
-   mkdir -p hotkeys/models
-   curl -L -o hotkeys/models/ggml-large-v3-q5_0.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin
+   # Windows
+   wmic path win32_VideoController get Name 2>/dev/null || echo "UNKNOWN"
+   # macOS/Linux
+   lspci 2>/dev/null | grep -i 'vga\|3d\|display' || echo "UNKNOWN"
    ```
 
-5. **Create config file:**
+   Classify the GPU:
+   - Contains "NVIDIA" → `gpu_type = nvidia`
+   - Contains "AMD" or "Radeon" → `gpu_type = amd`
+   - Contains "Intel" → `gpu_type = intel`
+   - Unknown or integrated only → `gpu_type = cpu`
+
+   **4b: Detect VRAM / system RAM:**
+   ```bash
+   # NVIDIA — reports VRAM in MiB
+   nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null || echo "0"
+   # AMD/Intel — no universal CLI, ask user
+   ```
+
+   IF `gpu_type` is `amd` or `intel`, try to detect VRAM automatically:
+   ```bash
+   # Windows — query VRAM via WMIC (reports in bytes)
+   wmic path Win32_VideoController get AdapterRAM 2>/dev/null
+   # Convert: divide by 1073741824 for GB
+   ```
+   IF detection fails, ask: "How much VRAM does your GPU have? (Check Task Manager > Performance > GPU)"
+
+   IF `gpu_type` is `cpu`, check system RAM:
+   ```bash
+   node -e "console.log(Math.round(require('os').totalmem()/1073741824)+'GB')"
+   ```
+
+   **4c: Choose Whisper backend:**
+
+   Present the recommendation based on detected hardware:
+
+   | GPU Type | Backend | Install Command |
+   |----------|---------|----------------|
+   | NVIDIA (CUDA) | `faster-whisper` (GPU) | `pip install faster-whisper` |
+   | AMD (Vulkan) | `pywhispercpp` (Vulkan) | `pip install pywhispercpp` |
+   | Intel (Vulkan) | `pywhispercpp` (Vulkan) | `pip install pywhispercpp` |
+   | CPU only | `faster-whisper` (CPU) | `pip install faster-whisper` |
+
+   Tell the user:
+   > "Detected: {gpu_type} GPU ({gpu_name}), {vram}GB VRAM"
+   > "Recommended backend: {backend}. This will use your {gpu_type} for fast transcription."
+   > "OK to install? (yes / use CPU instead)"
+
+   Install the chosen backend. For Vulkan (AMD/Intel), also check:
+   ```bash
+   # Check if Vulkan SDK is available
+   vulkaninfo --summary 2>/dev/null && echo "VULKAN OK" || echo "VULKAN MISSING"
+   ```
+   IF Vulkan is missing, tell the user:
+   > "Vulkan SDK not detected. For GPU acceleration, install the Vulkan SDK from https://vulkan.lunarg.com/sdk/home"
+   > "Continuing with CPU mode for now — you can switch to GPU later by installing Vulkan."
+   Fall back to CPU mode.
+
+   **4d: Choose model size:**
+
+   Recommend based on VRAM / RAM:
+
+   | Available Memory | Recommended Model | Size | Quality |
+   |-----------------|-------------------|------|---------|
+   | >= 10GB VRAM | `large-v3` (quantized q5) | ~500MB | Best accuracy |
+   | 6-10GB VRAM | `medium` | ~500MB | Good accuracy |
+   | 4-6GB VRAM | `small` | ~150MB | Decent accuracy |
+   | < 4GB VRAM or CPU with >= 16GB RAM | `medium` (CPU) | ~500MB | Good, but slower |
+   | CPU with < 16GB RAM | `small` (CPU) | ~150MB | Decent, faster |
+
+   Present to user:
+   > "Based on your {memory}GB {vram_or_ram}, I recommend the **{model}** model ({size}, {quality})."
+   > "Larger models are more accurate but need more memory. Options:"
+   > 1. **{recommended}** (recommended for your hardware)
+   > 2. **large-v3-q5** (~500MB, best quality, needs >= 10GB VRAM)
+   > 3. **medium** (~500MB, good quality)
+   > 4. **small** (~150MB, decent quality, fastest)
+
+   **4e: Download chosen model:**
+
+   Model download URLs (whisper.cpp GGML format from HuggingFace):
+   ```
+   large-v3-q5:  https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin
+   medium:       https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin
+   small:        https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin
+   ```
+
+   ```bash
+   mkdir -p hotkeys/models
+   curl -L -o hotkeys/models/ggml-{model}.bin {url}
+   ```
+
+   After download, update the model path in `hotkeys/whisper-stt.py` to point to the downloaded file.
+
+5. **Configure hotkey bindings:**
+
+   Detect keyboard type:
+   ```bash
+   # Windows — check if laptop or desktop by chassis type
+   wmic systemenclosure get ChassisTypes 2>/dev/null
+   # ChassisTypes 8,9,10,11,12,14 = Laptop/Portable; 3,4,5,6,7 = Desktop/Tower
+   ```
+
+   **Default bindings (desktop keyboard with dedicated F-keys):**
+
+   | Key | Action | Description |
+   |-----|--------|-------------|
+   | F7 | Push-to-talk | Hold to record, release to transcribe |
+   | F8 | Text-to-speech | Read Claude's last response aloud |
+   | F9 | Cancel recording | Stop ongoing recording |
+   | F4 | Continue | Send "continue" to Claude |
+   | F6 | Toggle notifications | Mute/unmute completion sounds |
+
+   **IF laptop detected:**
+   > "You're on a laptop. F-keys often require holding Fn, which is awkward for push-to-talk. Want to use alternative bindings?"
+   >
+   > Suggested alternatives:
+   > 1. **Scroll Lock / Pause** -- rarely used, no Fn needed
+   > 2. **Right Ctrl + key combos** -- e.g., RCtrl+R for record
+   > 3. **Custom** -- tell me which keys you prefer
+
+   **IF desktop detected or user is fine with defaults:**
+   > "Default hotkeys: F7 = push-to-talk, F8 = TTS, F4 = continue. OK? (yes / customize)"
+
+   IF user wants to customize, ask which keys they want for each action.
+
+   Write the chosen bindings to `hotkeys/config.json`:
+   ```json
+   {
+     "hotkeys": {
+       "push_to_talk": "F7",
+       "tts": "F8",
+       "cancel_recording": "F9",
+       "continue": "F4",
+       "toggle_notifications": "F6"
+     },
+     "whisper": {
+       "model_path": "models/ggml-{model}.bin",
+       "backend": "{backend}"
+     },
+     "microphone": "{mic_name}"
+   }
+   ```
+
+6. **Create config file (if not already written in step 5):**
    IF `hotkeys/config.json` does not exist, copy from example:
    ```bash
    cp hotkeys/config.example.json hotkeys/config.json
    ```
 
-6. **Create Hotkeys project agent:**
+7. **Create Hotkeys project agent:**
    Write a CLAUDE.md for the hotkeys context (only IF it does not already exist):
 
    Write to `{repo_root}/hotkeys/CLAUDE.md`:
@@ -605,11 +748,11 @@ IF the user selected Hotkey Manager:
    3. Test changes with: `python hotkey-manager.py`
    ```
 
-7. **Test:**
+8. **Test:**
    ```bash
    python hotkeys/hotkey-manager.py &
    ```
-   Tell user to press F7 to test voice recording (if mic configured), then Ctrl+C to stop.
+   Tell user to press the configured push-to-talk key to test voice recording, then Ctrl+C to stop.
 
 Report: "Hotkey Manager installed. Start with `python hotkeys/hotkey-manager.py`."
 
