@@ -1,107 +1,74 @@
-# Quick Start Guide
+# Quick Start
 
-## Prerequisites
+The fastest way to get set up. One prerequisite, three steps, done.
 
-You need these installed before setting up AgentHub:
+## Prerequisite
 
-### 1. Node.js (v18 or newer)
-- Download: https://nodejs.org (LTS recommended)
-- Verify: `node --version`
+Install [Claude Code](https://docs.anthropic.com/en/docs/claude-code) if you don't have it:
 
-### 2. Git for Windows
-- Download: https://gitforwindows.org
-- Use default install path (`C:\Program Files\Git`)
-- Verify: `git --version`
-
-### 3. C++ Build Tools (required to compile node-pty)
-
-**Option A** — Visual Studio Build Tools (recommended):
-1. Download [VS Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-2. Install the **"Desktop development with C++"** workload
-
-**Option B** — From an admin command prompt:
-```
-npm install -g windows-build-tools
-```
-
-### 4. Claude Code CLI
 ```bash
 npm install -g @anthropic-ai/claude-code
-claude  # Run once to authenticate
+claude   # run once to authenticate
 ```
 
-## Installation
+## Setup (30 seconds)
 
 ```bash
-# 1. Clone the repo
+# 1. Clone
 git clone https://github.com/qwertzuiop151/claude-toolkit.git
+
+# 2. Open Claude in the repo
 cd claude-toolkit
+claude
 
-# 2. Install dependencies (skip native build scripts initially)
-npm install --ignore-scripts
-
-# 3. Build node-pty for Electron
-npx electron-rebuild -f -w node-pty
-
-# 4. Build the app
-npm run build
-
-# 5. Launch
-npx electron .
+# 3. Tell Claude:
 ```
 
-## Create a Desktop Shortcut
+> "Read SETUP.md and set me up"
 
-The included `start.bat` builds and launches the app:
+That's it. Claude detects your system, asks a few questions, installs everything.
 
-```
-@echo off
-cd /d %~dp0
-set CLAUDECODE=
-echo Building...
-call npm run build >nul 2>&1
-echo Starting AgentHub...
-npx electron .
-```
+## What Happens
 
-Right-click `start.bat` → **Create shortcut** → move to Desktop.
+The wizard walks you through:
 
-## First Launch
+1. **Core setup** -- CLAUDE.md (global rules), settings.json (permissions + hooks), auto-memory + statusline hooks
+2. **Personalization** -- Adapts rules to your experience level and domain
+3. **Optional components** -- AgentHub (multi-terminal app), Hotkey Manager (voice control), Orchestrator project
 
-1. The **startup dialog** shows your Claude Code projects
-2. Pick a project, choose model/effort settings
-3. Click **Start** — a terminal panel opens with Claude running
-4. Click **+ Agent** in the toolbar to add more panels
-5. Use **Ctrl+1–9** to switch between panels
+You pick what you want. The wizard handles the rest.
 
-## Configuration
+## After Setup
 
-### Custom projects directory
-
-By default, AgentHub finds your projects by reading Claude Code’s config at `~/.claude/projects/`. To override:
+Restart Claude Code for hooks to activate:
 
 ```bash
-set AGENTHUB_PROJECTS_DIR=D:\MyProjects
+/exit
+claude
 ```
 
-Add this to your `start.bat` before the `npm run build` line.
+Your new statusline should appear, and Claude will start reminding you to update MEMORY.md.
 
-## Troubleshooting
+## Manual Setup
 
-| Problem | Solution |
-|---------|----------|
-| **`node-pty` build fails** | Install C++ build tools (see Prerequisites step 3) |
-| **Blank/white window** | Run `npm run build` again — `dist/renderer/index.html` is missing |
-| **"Process ended" immediately** | Claude CLI not installed or not authenticated (`claude` in a terminal) |
-| **No projects listed** | Run `claude` at least once in a project so `~/.claude/projects/` exists |
-| **`electron-rebuild` fails** | Try: `node node_modules/node-pty/scripts/prebuild.js` then `node node_modules/electron/install.js` |
-| **Git Bash not found** | Install Git to default path, or set `GIT_BASH_PATH` env var |
+If you prefer to install manually without the wizard:
 
-## Keyboard Shortcuts
+1. Copy `templates/claude-md-global.md` to `~/.claude/CLAUDE.md`
+2. Copy `templates/settings.json` to `~/.claude/settings.json`
+3. Copy `hooks/auto-memory.mjs` to `~/.claude/hooks/auto-memory.mjs`
+4. Copy `hooks/statusline.mjs` to `~/.claude/hooks/statusline.mjs`
+5. Restart Claude Code
 
-| Shortcut | Action |
-|----------|--------|
-| Ctrl+1–9 | Switch to panel N |
-| Ctrl+Tab | Next panel |
-| Ctrl+Shift+Tab | Previous panel |
-| Ctrl+Shift+D | Open diagnostics viewer |
+For AgentHub (optional, Windows only):
+```bash
+cd claude-toolkit
+npm install --ignore-scripts
+npx electron-rebuild -f -w node-pty
+npm run build
+npx electron .
+```
+
+## Need Help?
+
+- Run `claude` and say: "Read TROUBLESHOOT.md and fix my setup"
+- Or read [TROUBLESHOOT.md](TROUBLESHOOT.md) yourself

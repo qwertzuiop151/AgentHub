@@ -25,7 +25,7 @@ Source templates live in `templates/` and `hooks/` relative to this repo root.
 
 ## Install
 
-### Step 1 of 10: Welcome + Install Mode
+### Step 1 of 11: Welcome + Install Mode
 
 Print the following welcome message to the user:
 
@@ -52,7 +52,7 @@ Store the user's choice. IF the user says anything resembling "quick", "fast", "
 
 ---
 
-### Step 2 of 10: Environment Detection
+### Step 2 of 11: Environment Detection
 
 Detect the current environment and report findings. Run these checks:
 
@@ -79,7 +79,7 @@ IF `~/.claude/` does not exist, create it and note that in the output. Continue 
 
 ---
 
-### Step 3 of 10: Existing File Handling
+### Step 3 of 11: Existing File Handling
 
 This step runs ONLY IF Step 2 detected existing files (`~/.claude/CLAUDE.md`, `~/.claude/settings.json`, or `~/.claude/hooks/*`).
 
@@ -99,7 +99,7 @@ IF the user chose **Quick Install** in Step 1, default to **Merge** and tell the
 
 ---
 
-### Step 4 of 10: Configuration + Personalization
+### Step 4 of 11: Configuration + Personalization
 
 **4a: Core Configuration**
 
@@ -158,7 +158,7 @@ Store all choices and continue to Step 5.
 
 ---
 
-### Step 5 of 10: Dry-Run Summary
+### Step 5 of 11: Dry-Run Summary
 
 Build a file action list based on all choices so far. Display it using action icons:
 
@@ -187,7 +187,7 @@ IF the user deselects items, update the action list and re-display. Wait for exp
 
 ---
 
-### Step 6 of 10: Backup
+### Step 6 of 11: Backup
 
 This step runs ONLY IF the install strategy is **Fresh Install** or **Merge** and existing files will be overwritten.
 
@@ -222,7 +222,7 @@ Backups created:
 
 ---
 
-### Step 7 of 10: Installation
+### Step 7 of 11: Installation
 
 Execute the planned actions. The source files are relative to this repo's root directory.
 
@@ -282,7 +282,7 @@ IF the user opted for a MEMORY.md starter:
 
 ---
 
-### Step 8 of 10: Smoke Test
+### Step 8 of 11: Smoke Test
 
 Validate that all installed files are correct:
 
@@ -314,7 +314,7 @@ IF any check fails:
 
 ---
 
-### Step 9 of 10: Personalization
+### Step 9 of 11: Personalization
 
 This step adapts the installed files using the personalization choices from Step 4b. IF `personalization_depth` is **Light**, skip this step entirely.
 
@@ -462,7 +462,234 @@ IF the user wants to install an MCP:
 
 ---
 
-### Step 10 of 10: Complete
+### Step 10 of 11: Optional Components
+
+After the core setup is complete, offer optional components from this repo. Present each with a brief description and let the user pick.
+
+> "Your core Claude Code environment is ready. This repo also includes optional components:"
+>
+> 1. **AgentHub** -- Desktop app for running multiple Claude Code sessions side-by-side (Electron, Windows only)
+> 2. **Hotkey Manager** -- Keyboard shortcuts + Whisper voice-to-text for Claude Code (Python, Windows only)
+> 3. **Multi-Agent Blueprint** -- Architecture guide for scaling to multiple coordinated agents (just a document, no install needed)
+> 4. **GSD (Get Shit Done)** -- Structured project planning and execution framework for Claude Code
+>
+> "Type the numbers you want (e.g., '1,2'), 'all', or 'skip'."
+
+IF the user skips, go to Step 11.
+
+**10a: AgentHub Installation (OPTL-01)**
+
+IF the user selected AgentHub:
+
+1. **Check prerequisites:**
+   ```bash
+   node --version    # Need v18+
+   git --version     # Need Git for Windows (includes Git Bash)
+   npm config get msvs_version   # Need C++ build tools
+   ```
+   Report what's missing. IF prerequisites are missing, tell the user what to install and offer to continue without AgentHub.
+
+2. **Build the app** (the source is already in this repo):
+   ```bash
+   cd {repo_root}
+   npm install --ignore-scripts
+   npx electron-rebuild -f -w node-pty
+   npm run build
+   ```
+   IF any step fails, show the error and suggest reading `TROUBLESHOOT.md`.
+
+3. **Configure projects directory:**
+   Ask: "Where do you keep your project folders? (e.g., `C:\Users\You\Projects`)"
+
+   Check if Claude Code projects already exist:
+   ```bash
+   ls ~/.claude/projects/ 2>/dev/null
+   ```
+   - IF entries exist: "AgentHub can auto-detect your projects. Use auto-detection or set a custom path?"
+   - IF custom path: Add `set AGENTHUB_PROJECTS_DIR={path}` to `start.bat`
+
+4. **Create desktop shortcut:**
+   ```bash
+   cat > create-shortcut.vbs << 'VBS'
+   Set oWS = WScript.CreateObject("WScript.Shell")
+   sLinkFile = oWS.SpecialFolders("Desktop") & "\AgentHub.lnk"
+   Set oLink = oWS.CreateShortcut(sLinkFile)
+   oLink.TargetPath = oWS.CurrentDirectory & "\start.bat"
+   oLink.WorkingDirectory = oWS.CurrentDirectory
+   oLink.Description = "Launch AgentHub"
+   oLink.IconLocation = oWS.CurrentDirectory & "\assets\icon.ico"
+   oLink.WindowStyle = 7
+   oLink.Save
+   VBS
+   cscript //nologo create-shortcut.vbs
+   del create-shortcut.vbs
+   ```
+
+5. **Create AgentHub project agent:**
+   Create a project CLAUDE.md for the AgentHub folder so Claude knows this project's context:
+
+   Write to `{repo_root}/CLAUDE.md` (only IF it does not already exist):
+   ```markdown
+   # AgentHub
+
+   ## Scope
+   Multi-agent terminal manager for Claude Code. Electron + React + xterm.js + node-pty.
+
+   ## Hard Rules
+   1. Windows-only -- all PTY code uses Git Bash via node-pty
+   2. Build before testing: `npm run build` then `npx electron .`
+   3. Native modules: after any node-pty change run `npx electron-rebuild -f -w node-pty`
+   ```
+
+6. **Test launch:**
+   ```bash
+   npx electron .
+   ```
+   Tell the user to verify: startup dialog appears, projects are listed. Then close.
+
+Report: "AgentHub installed. Launch from desktop shortcut or `start.bat`."
+
+**10b: Hotkey Manager Installation (OPTL-02)**
+
+IF the user selected Hotkey Manager:
+
+1. **Check prerequisites:**
+   ```bash
+   python --version    # Need Python 3.8+
+   pip --version
+   ```
+   IF Python is missing, tell the user to install it and offer to continue without Hotkeys.
+
+2. **Install dependencies:**
+   ```bash
+   cd {repo_root}/hotkeys
+   pip install -r requirements.txt
+   ```
+
+3. **Configure microphone (for Whisper voice control):**
+   ```bash
+   python -c "import sounddevice; print(sounddevice.query_devices())"
+   ```
+   Show the device list and ask: "Which microphone do you use? (Enter the name or number)"
+
+   Update `MIC_NAME_CONTAINS` in `hotkeys/whisper-stt.py` with a unique substring of the selected device name.
+
+4. **Download Whisper model (optional):**
+   Ask: "Download the Whisper speech model for offline voice control? (~500MB)"
+
+   IF yes:
+   ```bash
+   mkdir -p hotkeys/models
+   curl -L -o hotkeys/models/ggml-large-v3-q5_0.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3-q5_0.bin
+   ```
+
+5. **Create config file:**
+   IF `hotkeys/config.json` does not exist, copy from example:
+   ```bash
+   cp hotkeys/config.example.json hotkeys/config.json
+   ```
+
+6. **Create Hotkeys project agent:**
+   Write a CLAUDE.md for the hotkeys context (only IF it does not already exist):
+
+   Write to `{repo_root}/hotkeys/CLAUDE.md`:
+   ```markdown
+   # Hotkey Manager
+
+   ## Scope
+   System-wide keyboard shortcuts and Whisper voice-to-text for Claude Code. Python scripts.
+
+   ## Hard Rules
+   1. All scripts must work without admin privileges
+   2. Microphone config via MIC_NAME_CONTAINS in whisper-stt.py
+   3. Test changes with: `python hotkey-manager.py`
+   ```
+
+7. **Test:**
+   ```bash
+   python hotkeys/hotkey-manager.py &
+   ```
+   Tell user to press F7 to test voice recording (if mic configured), then Ctrl+C to stop.
+
+Report: "Hotkey Manager installed. Start with `python hotkeys/hotkey-manager.py`."
+
+**10c: Multi-Agent Blueprint (OPTL-03)**
+
+IF the user selected Blueprint:
+
+No installation needed. Simply tell the user:
+
+> "The Multi-Agent Blueprint is at `BLUEPRINT.md` in this repo. It's a 550-line guide to building a self-improving multi-agent system. Read it when you're ready to scale beyond a single project."
+>
+> "Quick start: Copy the prompt from the top of BLUEPRINT.md into a new Claude Code session."
+
+**10d: Central Orchestrator Project (Metaplaner)**
+
+IF the user selected Blueprint OR `personalization_depth` is Full OR the user has 3+ existing projects in `~/.claude/projects/`:
+
+> "The Blueprint recommends a central orchestrator project -- a 'Metaplaner' that coordinates all your other projects. It's a planning-only folder with a METAPLAN.md that tracks status, TODOs, and bugs across everything."
+>
+> "Want me to create one? (yes / no)"
+
+IF yes:
+
+1. Ask: "Where should I create it? (default: `{projects_dir}/Metaplaner`)"
+2. Create the directory and files:
+
+   Write `{path}/CLAUDE.md`:
+   ```markdown
+   # Metaplaner
+
+   Meta-planning session only. No implementation here -- all building happens in the per-project folders.
+
+   ## Scope
+   - Brainstorming new ideas
+   - Prioritization discussions
+   - Cross-project decisions
+
+   ## Hard Rules
+   1. Planning and discussion only -- implementation happens in project folders
+   2. Keep METAPLAN.md updated with status of all projects
+   ```
+
+   Write `{path}/METAPLAN.md`:
+   ```markdown
+   # METAPLAN -- Central Project Tracker
+
+   ## Projects
+
+   | Project | Status | Description |
+   |---------|--------|-------------|
+   | {auto-detect from ~/.claude/projects/ and list them} |
+
+   ## TODOs
+
+   - [ ] (add your tasks here)
+
+   ## Bugs
+
+   (none yet)
+   ```
+
+   Auto-detect existing projects from `~/.claude/projects/` directory names and populate the table.
+
+3. Write `{path}/MEMORY.md` using the memory starter template.
+
+Report: "Orchestrator project created at `{path}`. Open Claude Code there to coordinate all your projects."
+
+**10e: GSD Recommendation (OPTL-05)**
+
+IF the user selected GSD OR if `experience_level` is Power User:
+
+> "**GSD (Get Shit Done)** is a structured planning and execution framework for Claude Code. It breaks large projects into phases with plans, tracks progress, and runs parallel execution agents."
+>
+> "Install: `claude /install-skill https://github.com/gsd-framework/gsd`"
+>
+> "GSD is powerful but opinionated -- best for projects with 5+ tasks. For smaller work, just use Claude Code directly."
+
+---
+
+### Step 11 of 11: Complete
 
 Print this completion message:
 
@@ -478,17 +705,12 @@ Your Claude Code environment is now configured with:
   - Context-aware statusline (hook)
   {IF personalization != Light: - Domain-specific rules and permissions}
   {IF MCPs installed: - MCP servers: {list}}
+  {IF AgentHub installed: - AgentHub desktop app (launch from desktop shortcut)}
+  {IF Hotkeys installed: - Hotkey Manager (start with: python hotkeys/hotkey-manager.py)}
+  {IF Metaplaner created: - Orchestrator project at {path}}
 
 IMPORTANT: Restart Claude Code for changes to take effect.
   Exit this session (type /exit) and start a new one.
-
-Optional extras in this repo:
-  - BLUEPRINT.md    Multi-agent architecture patterns
-  - src/            AgentHub desktop app (Electron)
-  - hotkeys/        Voice control & hotkey manager (Python)
-
-Read BLUEPRINT.md to learn how to scale to multiple
-projects with persistent memory and self-improvement.
 
 To uninstall or restore previous config, say:
   "Read SETUP.md, go to the Restore section"
