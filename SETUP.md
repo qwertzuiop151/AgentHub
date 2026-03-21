@@ -25,7 +25,7 @@ Source templates live in `templates/` and `hooks/` relative to this repo root.
 
 ## Install
 
-### Step 1 of 9: Welcome + Install Mode
+### Step 1 of 10: Welcome + Install Mode
 
 Print the following welcome message to the user:
 
@@ -52,7 +52,7 @@ Store the user's choice. IF the user says anything resembling "quick", "fast", "
 
 ---
 
-### Step 2 of 9: Environment Detection
+### Step 2 of 10: Environment Detection
 
 Detect the current environment and report findings. Run these checks:
 
@@ -79,7 +79,7 @@ IF `~/.claude/` does not exist, create it and note that in the output. Continue 
 
 ---
 
-### Step 3 of 9: Existing File Handling
+### Step 3 of 10: Existing File Handling
 
 This step runs ONLY IF Step 2 detected existing files (`~/.claude/CLAUDE.md`, `~/.claude/settings.json`, or `~/.claude/hooks/*`).
 
@@ -99,7 +99,9 @@ IF the user chose **Quick Install** in Step 1, default to **Merge** and tell the
 
 ---
 
-### Step 4 of 9: Configuration Questions
+### Step 4 of 10: Configuration + Personalization
+
+**4a: Core Configuration**
 
 **IF Quick Install:**
 
@@ -107,8 +109,6 @@ Ask only these questions:
 1. "Is `~/.claude/` the correct location for your config?" (confirm or provide alternative)
 2. "Do you want to add any extra permission rules to settings.json? (e.g., `Bash(pip *)`, `Bash(cargo *)`) Or press enter to skip."
 3. "Should I create a MEMORY.md starter in the current project directory?" (yes/no)
-
-Then skip to Step 5.
 
 **IF Custom Install:**
 
@@ -120,11 +120,45 @@ Ask per-component:
 5. "Create MEMORY.md starter in current project?" (yes / no)
 6. "Any extra permission rules to add?" (freeform or skip)
 
-Store all choices.
+**4b: Personalization (both Quick and Custom)**
+
+Ask these personalization questions. They are used in Step 9 to adapt the installed files.
+
+**Question 1 -- Experience Level:**
+
+> "How experienced are you with Claude Code?"
+>
+> 1. **Beginner** -- Just started, want clear guidance and safe defaults
+> 2. **Intermediate** -- Comfortable with basics, ready for power features
+> 3. **Power User** -- Deep experience, want maximum control and minimal hand-holding
+
+Store as `experience_level`. IF Quick Install and user seems impatient, default to Intermediate.
+
+**Question 2 -- Domain:**
+
+> "What's your primary field? This helps me suggest relevant tools and seed your memory."
+>
+> Examples: web development, data science, bioinformatics, DevOps, mobile development, research/academia, creative writing, general software engineering
+>
+> (Or type your own)
+
+Store as `domain`. Accept freeform input.
+
+**Question 3 -- Personalization Depth:**
+
+> "How much should I customize your setup?"
+>
+> 1. **Light** -- Just install the templates as-is. I'll customize later.
+> 2. **Medium** -- Adapt CLAUDE.md rules to my domain and add relevant tool suggestions.
+> 3. **Full** -- Deep customization: domain-specific rules, MCP recommendations, memory seeding, custom permissions.
+
+Store as `personalization_depth`. IF Quick Install, default to Medium.
+
+Store all choices and continue to Step 5.
 
 ---
 
-### Step 5 of 9: Dry-Run Summary
+### Step 5 of 10: Dry-Run Summary
 
 Build a file action list based on all choices so far. Display it using action icons:
 
@@ -153,7 +187,7 @@ IF the user deselects items, update the action list and re-display. Wait for exp
 
 ---
 
-### Step 6 of 9: Backup
+### Step 6 of 10: Backup
 
 This step runs ONLY IF the install strategy is **Fresh Install** or **Merge** and existing files will be overwritten.
 
@@ -188,7 +222,7 @@ Backups created:
 
 ---
 
-### Step 7 of 9: Installation
+### Step 7 of 10: Installation
 
 Execute the planned actions. The source files are relative to this repo's root directory.
 
@@ -248,7 +282,7 @@ IF the user opted for a MEMORY.md starter:
 
 ---
 
-### Step 8 of 9: Smoke Test
+### Step 8 of 10: Smoke Test
 
 Validate that all installed files are correct:
 
@@ -280,7 +314,155 @@ IF any check fails:
 
 ---
 
-### Step 9 of 9: What's Next
+### Step 9 of 10: Personalization
+
+This step adapts the installed files using the personalization choices from Step 4b. IF `personalization_depth` is **Light**, skip this step entirely.
+
+**9a: Adapt CLAUDE.md by Experience Level**
+
+Read the installed `~/.claude/CLAUDE.md`. Modify it based on `experience_level`:
+
+**Beginner:**
+- Add a `## Getting Started` section at the top with these tips:
+  ```
+  ## Getting Started
+  - Ask Claude to explain what it's doing before making changes
+  - Use "show me first, then do it" for unfamiliar operations
+  - Say "undo that" if something goes wrong -- Claude can revert
+  - Start each session by telling Claude what you want to accomplish
+  ```
+- Add to Hard Rules: "Explain each step before executing when the user is learning"
+- Add to Hard Rules: "Always offer to undo after making changes"
+
+**Intermediate:** (no changes needed -- the template defaults are designed for intermediate users)
+
+**Power User:**
+- Remove the `<!-- Customize: -->` HTML comments (they already know)
+- Add to Hard Rules: "Prefer terse responses. Skip explanations unless asked."
+- Add a `## Model Selection` section:
+  ```
+  ## Model Selection
+  - Opus: Architecture, multi-file refactoring, complex debugging, brainstorming
+  - Sonnet: Isolated bugfixes, features with clear specs, single-file code review
+  - Haiku: Renaming, formatting, batch edits, summaries
+  - Suggest cheaper models when appropriate: "This is a Haiku task -- switch?"
+  ```
+
+Write the modified CLAUDE.md back.
+
+**9b: Adapt CLAUDE.md by Domain**
+
+Based on `domain`, add domain-specific rules and suggestions to the `## Hard Rules` section of `~/.claude/CLAUDE.md`. Use your knowledge of the domain to add 2-4 genuinely useful rules.
+
+Examples (adapt based on actual user input):
+
+**Web Development:**
+```
+- Run `npm test` or equivalent after every code change
+- Check accessibility (WCAG AA) when modifying UI components
+- Prefer existing project conventions over personal preferences
+```
+
+**Data Science / ML:**
+```
+- Always read source data fully before analysis -- never trust summaries alone
+- Include data shape, dtypes, and sample rows when exploring datasets
+- Pin package versions in requirements.txt for reproducibility
+```
+
+**Bioinformatics:**
+```
+- Verify sequence data integrity (check FASTA headers, lengths) before analysis
+- Cross-reference GenBank accession numbers when citing sequences
+- Use BioPython for sequence I/O -- check `pip show biopython` before installing
+```
+
+**DevOps / SRE:**
+```
+- Never run destructive commands (rm -rf, DROP TABLE) without explicit confirmation
+- Always check current context (kubectl config current-context, terraform workspace show) before operations
+- Prefer dry-run flags (--dry-run, terraform plan) before apply
+```
+
+**Research / Academia:**
+```
+- Always read original papers/data fully before paraphrasing
+- Tag evidence levels: [HYPOTHESIS], [CORRELATION], [ESTABLISHED], [UNCLEAR]
+- When data is insufficient, say so -- do not fill gaps with speculation
+```
+
+**General Software Engineering:**
+```
+- Run tests after every change: adapt to project's test framework
+- Check existing code patterns before introducing new ones
+- Prefer editing existing files over creating new ones
+```
+
+For domains not listed above, use your knowledge to generate 2-4 relevant rules. Ask the user: "I've added these domain-specific rules to your CLAUDE.md. Want to adjust any?" Show the added rules.
+
+**9c: Domain-Specific Permissions**
+
+Based on `domain`, add relevant permission rules to `~/.claude/settings.json` (append to `permissions.allow`, deduplicate):
+
+| Domain | Suggested Permissions |
+|--------|----------------------|
+| Web Dev | `Bash(npm *)`, `Bash(npx *)`, `Bash(yarn *)` |
+| Data Science | `Bash(pip *)`, `Bash(python *)`, `Bash(jupyter *)` |
+| Bioinformatics | `Bash(pip *)`, `Bash(python *)`, `Bash(blast*)` |
+| DevOps | `Bash(docker *)`, `Bash(kubectl *)`, `Bash(terraform *)` |
+| Rust | `Bash(cargo *)`, `Bash(rustc *)` |
+| Go | `Bash(go *)` |
+| General | `Bash(npm *)`, `Bash(pip *)` |
+
+Ask the user before adding: "I'd like to add these permission rules for your domain. OK?" IF the user declines, skip.
+
+**9d: Seed MEMORY.md**
+
+IF a MEMORY.md was created in Step 7e, update it with the user's profile:
+
+Replace the placeholder sections with actual values:
+```markdown
+## User
+- Domain: {domain from Step 4b}
+- Experience level: {experience_level from Step 4b}
+- [Ask: "Anything else I should remember about how you work?"]
+
+## Tools
+- Hooks: auto-memory (UserPromptSubmit), statusline (active)
+- Installed via: Claude Toolkit (date)
+```
+
+**9e: MCP Recommendations (Full personalization only)**
+
+IF `personalization_depth` is **Full**, suggest relevant MCP servers based on `domain`:
+
+| Domain | Recommended MCPs |
+|--------|-----------------|
+| Any code project | **jCodeMunch** -- code exploration (symbols, outlines, search). Install: `npm install -g jcodemunch-mcp-server`, then add to `~/.claude.json` |
+| Research / Academia | **paper-search** -- PubMed, bioRxiv, arXiv, Google Scholar search |
+| Bioinformatics | **paper-search** + **PubMed** (Anthropic connector, free) |
+| General productivity | **Google Drive** (Anthropic connector) -- read docs and spreadsheets |
+| Web Dev | **Playwright** -- browser automation and testing |
+
+Present recommendations as a list:
+
+> "Based on your domain, these MCP servers could be useful:"
+>
+> 1. **jCodeMunch** -- Explore code without reading entire files. Saves tokens.
+>    Install: `npm install -g jcodemunch-mcp-server`
+> 2. **paper-search** -- Search academic papers from Claude Code.
+>    Install: `npm install -g paper-search-mcp`
+>
+> "Want me to help install any of these? (Say the number, 'all', or 'skip')"
+
+IF the user wants to install an MCP:
+1. Run the install command
+2. Add the MCP config to `~/.claude.json` (create file if needed, merge if exists)
+3. Verify it was added correctly
+
+---
+
+### Step 10 of 10: Complete
 
 Print this completion message:
 
@@ -290,10 +472,12 @@ Print this completion message:
 ============================================
 
 Your Claude Code environment is now configured with:
-  - Global rules (CLAUDE.md)
-  - Smart permissions (settings.json)
+  - Global rules (CLAUDE.md) -- tailored to {domain}
+  - Smart permissions (settings.json) -- {experience_level} profile
   - Auto-memory reminders (hook)
   - Context-aware statusline (hook)
+  {IF personalization != Light: - Domain-specific rules and permissions}
+  {IF MCPs installed: - MCP servers: {list}}
 
 IMPORTANT: Restart Claude Code for changes to take effect.
   Exit this session (type /exit) and start a new one.
@@ -302,6 +486,9 @@ Optional extras in this repo:
   - BLUEPRINT.md    Multi-agent architecture patterns
   - src/            AgentHub desktop app (Electron)
   - hotkeys/        Voice control & hotkey manager (Python)
+
+Read BLUEPRINT.md to learn how to scale to multiple
+projects with persistent memory and self-improvement.
 
 To uninstall or restore previous config, say:
   "Read SETUP.md, go to the Restore section"
