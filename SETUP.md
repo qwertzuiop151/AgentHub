@@ -701,11 +701,13 @@ IF the user selected Hotkey Manager:
 
    | Key | Action | Description |
    |-----|--------|-------------|
-   | F7 | Push-to-talk | Hold to record, release to transcribe |
-   | F8 | Text-to-speech | Read Claude's last response aloud |
-   | F9 | Cancel recording | Stop ongoing recording |
-   | F4 | Continue | Send "continue" to Claude |
-   | F6 | Toggle notifications | Mute/unmute completion sounds |
+   | F9 | Push-to-talk (STT) | Hold to record, release to transcribe |
+   | F8 | TTS toggle | Toggle text-to-speech on/off |
+   | F7 | TTS stop | Stop current speech playback |
+   | F4 | Language toggle | Switch between German and English |
+   | F12 | Quit | Exit the hotkey manager |
+
+   Also ask: "What language do you mainly speak to Claude? (default: English)" — Store as `language` for Whisper config (e.g., "en", "de", "fr").
 
    **IF laptop detected:**
    > "You're on a laptop. F-keys often require holding Fn, which is awkward for push-to-talk. Want to use alternative bindings?"
@@ -720,23 +722,19 @@ IF the user selected Hotkey Manager:
 
    IF user wants to customize, ask which keys they want for each action.
 
-   Write the chosen bindings to `hotkeys/config.json`:
+   Update the chosen bindings in `hotkeys/config.json` (keys: `hotkey_stt`, `hotkey_tts_toggle`, `hotkey_tts_stop`, `hotkey_lang_toggle`):
    ```json
    {
-     "hotkeys": {
-       "push_to_talk": "F7",
-       "tts": "F8",
-       "cancel_recording": "F9",
-       "continue": "F4",
-       "toggle_notifications": "F6"
-     },
-     "whisper": {
-       "model_path": "models/ggml-{model}.bin",
-       "backend": "{backend}"
-     },
-     "microphone": "{mic_name}"
+     "mic_name": "{mic_name}",
+     "language": "en",
+     "model_path": "models/ggml-{model}.bin",
+     "hotkey_stt": "f9",
+     "hotkey_lang_toggle": "f4",
+     "hotkey_tts_toggle": "f8",
+     "hotkey_tts_stop": "f7"
    }
    ```
+   Adjust key names if the user chose custom bindings. Set `language` to the user's preferred language (e.g., "de" for German, "en" for English).
 
 6. **Create config file (if not already written in step 5):**
    IF `hotkeys/config.json` does not exist, copy from example:
