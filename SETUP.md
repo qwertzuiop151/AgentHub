@@ -601,13 +601,25 @@ IF the user selected Hotkey Manager:
    # AMD/Intel — no universal CLI, ask user
    ```
 
-   IF `gpu_type` is `amd` or `intel`, try to detect VRAM automatically:
+   **VRAM detection (all GPU types):**
+
+   Try multiple methods in order until one works:
    ```bash
-   # Windows — query VRAM via WMIC (reports in bytes)
-   wmic path Win32_VideoController get AdapterRAM 2>/dev/null
-   # Convert: divide by 1073741824 for GB
+   # Method 1: NVIDIA — nvidia-smi (exact, reliable)
+   nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null
+
+   # Method 2: Windows (all GPUs) — DirectX diagnostic
+   # Parses "Dedicated Video Memory" which is correct for all vendors
+   node -e "const {execSync}=require('child_process'); const out=execSync('dxdiag /t dxdiag_out.txt && timeout /t 3 >nul && type dxdiag_out.txt && del dxdiag_out.txt',{encoding:'utf8'}); const m=out.match(/Dedicated Video Memory:\s*(\d+)\s*MB/); if(m) console.log(Math.round(m[1]/1024)+'GB'); else console.log('UNKNOWN')" 2>/dev/null
+
+   # Method 3: Linux — lspci verbose or /sys
+   lspci -v 2>/dev/null | grep -i 'memory.*size' | head -1
+
+   # Method 4: macOS — system_profiler
+   system_profiler SPDisplaysDataType 2>/dev/null | grep 'VRAM\|Memory'
    ```
-   IF detection fails, ask: "How much VRAM does your GPU have? (Check Task Manager > Performance > GPU)"
+
+   IF all methods fail, ask: "How much VRAM does your GPU have? (Check Task Manager > Performance > GPU)"
 
    IF `gpu_type` is `cpu`, check system RAM:
    ```bash
