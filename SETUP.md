@@ -1,6 +1,6 @@
 # Claude Toolkit -- Setup Wizard
 
-> **Usage:** Clone this repo, run `claude`, say: "Read SETUP.md and set me up"
+> **Usage:** Tell Claude: "Clone https://github.com/qwertzuiop151/claude-toolkit and read SETUP.md — set me up"
 >
 > This document is written FOR Claude. It contains step-by-step instructions
 > that a Claude Code instance reads and executes to install the toolkit.
@@ -683,7 +683,7 @@ IF the user selected GSD OR if `experience_level` is Power User:
 
 > "**GSD (Get Shit Done)** is a structured planning and execution framework for Claude Code. It breaks large projects into phases with plans, tracks progress, and runs parallel execution agents."
 >
-> "Install: `claude /install-skill https://github.com/gsd-framework/gsd`"
+> "To learn more, search for 'GSD Get Shit Done Claude Code' or ask in the Claude Code community."
 >
 > "GSD is powerful but opinionated -- best for projects with 5+ tasks. For smaller work, just use Claude Code directly."
 

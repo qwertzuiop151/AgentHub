@@ -1,6 +1,6 @@
 # Quick Start
 
-The fastest way to get set up. One prerequisite, three steps, done.
+The fastest way to get set up. One prerequisite, one step.
 
 ## Prerequisite
 
@@ -13,20 +13,11 @@ claude   # run once to authenticate
 
 ## Setup (30 seconds)
 
-```bash
-# 1. Clone
-git clone https://github.com/qwertzuiop151/claude-toolkit.git
+Start Claude anywhere and say:
 
-# 2. Open Claude in the repo
-cd claude-toolkit
-claude
+> "Clone https://github.com/qwertzuiop151/claude-toolkit and read SETUP.md — set me up"
 
-# 3. Tell Claude:
-```
-
-> "Read SETUP.md and set me up"
-
-That's it. Claude detects your system, asks a few questions, installs everything.
+That's it. Claude clones the repo, detects your system, asks a few questions, installs everything.
 
 ## What Happens
 

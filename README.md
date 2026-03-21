@@ -5,15 +5,11 @@
 ## Get Started in 30 Seconds
 
 1. Install [Claude Code](https://docs.anthropic.com/en/docs/claude-code) if you don't have it: `npm install -g @anthropic-ai/claude-code`
-2. Clone this repo:
-   ```bash
-   git clone https://github.com/qwertzuiop151/claude-toolkit
-   cd claude-toolkit
-   claude
-   ```
-3. Tell Claude: **"Read SETUP.md and set me up"**
+2. Start Claude (anywhere) and tell it:
 
-That's it. Claude handles the rest -- detects your system, asks a few questions, installs everything.
+> **"Clone https://github.com/qwertzuiop151/claude-toolkit and read SETUP.md — set me up"**
+
+That's it. Claude clones the repo, detects your system, asks a few questions, installs everything.
 
 ## What You Get
 
